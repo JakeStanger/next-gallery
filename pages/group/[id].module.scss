@@ -1,0 +1,15 @@
+@use 'styles/colors';
+
+.header {
+  max-width: 1200px;
+  margin: 10px auto;
+
+  @media screen and (max-width: 1200px) {
+    padding: 0 20px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    border-bottom: 1px solid rgba(colors.$grey, 0.3);
+  }
+}

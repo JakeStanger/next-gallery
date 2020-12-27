@@ -1,0 +1,23 @@
+@use 'styles/colors';
+
+.button {
+  border: 1px solid colors.$gold-light;
+  background-color: white;
+  padding: 10px 20px;
+  font-family: Raleway, sans-serif;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(colors.$gold-light, 0.1);
+  }
+
+  &:active {
+    background-color: rgba(colors.$gold-light, 0.2);
+  }
+
+  &:disabled {
+    background-color: lighten(colors.$grey-light, 0.1);
+    opacity: 0.7;
+    cursor: unset;
+  }
+}

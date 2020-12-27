@@ -1,0 +1,46 @@
+@use 'styles/colors';
+
+.linkLarge {
+  font-size: 5rem;
+  padding: 20px;
+  transition: 0.15s ease all;
+  min-width: 235px;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: colors.$grey;
+    text-decoration: none;
+
+    .label {
+      font-size: 2.5rem;
+      text-align: center;
+    }
+
+    .customIcon {
+      width: unset;
+      overflow: visible;
+      font-size: inherit;
+      display: flex;
+      justify-content: center;
+
+      > svg {
+        height: 1em;
+      }
+    }
+  }
+
+  @media screen and (max-width: 560px) {
+    min-width: 140px;
+    font-size: 3rem;
+
+    a .label {
+      font-size: 1.5rem;
+    }
+  }
+}

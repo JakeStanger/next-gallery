@@ -1,0 +1,15 @@
+version: '3.2'
+
+services:
+  mariadb:
+    image: mariadb:10.5.8
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+
+volumes:
+  mariadb-data:

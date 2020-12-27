@@ -1,0 +1,63 @@
+import React, { useCallback, useState } from 'react';
+import styles from './Navbar.module.scss';
+import INavbarProps from './INavbarProps';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { css } from '../../lib/utils/css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars } from '@fortawesome/free-solid-svg-icons';
+
+const Logo: React.FC = () => {
+  return (
+    <Link href={'/'}>
+      <div className={styles.logo}>
+        <img src={'/images/logo-small_64.png'} alt={'logo'} />
+      </div>
+    </Link>
+  );
+};
+
+const Navbar: React.FC<INavbarProps> = ({ links }) => {
+  const router = useRouter();
+
+  const [open, setOpen] = useState(false);
+
+  const toggleOpen = useCallback(() => {
+    setOpen(!open);
+  }, [open]);
+
+  return (
+    <nav className={styles.navBar}>
+      <div className={css(styles.links, open && styles.open)}>
+        <Logo />
+        {links.map((link) => (
+          <div
+            key={link.href}
+            className={css(
+              styles.link,
+              router.pathname === link.href && styles.active
+            )}
+          >
+            {!link.href.startsWith('http') ? (
+              <Link href={link.href}>{link.label}</Link>
+            ) : (
+              <a href={link.href} target={'_blank'} rel='noopener noreferrer'>
+                {link.label}
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+      <div>
+        <div className={styles.mobileArea}>
+          <Logo />
+          <div className={styles.hamburger} onClick={toggleOpen}>
+            <FontAwesomeIcon icon={faBars}></FontAwesomeIcon>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

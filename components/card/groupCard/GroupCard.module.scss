@@ -1,0 +1,16 @@
+@use 'styles/colors';
+
+.groupIndicator {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+  border-left: 1px solid rgba(colors.$gold, 0.5);
+  border-bottom: 1px solid rgba(colors.$gold, 0.5);
+  background-color: white;
+  padding: 3px 6px;
+
+  .text {
+    padding-left: 5px;
+  }
+}

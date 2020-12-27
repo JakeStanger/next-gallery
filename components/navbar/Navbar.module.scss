@@ -1,0 +1,73 @@
+@use 'styles/colors';
+
+.navBar {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid colors.$grey-light;
+  padding: 0 10px;
+
+  .links {
+    display: flex;
+
+    .link {
+      a {
+        color: colors.$grey;
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+      }
+
+      &.active a {
+        color: colors.$gold;
+      }
+    }
+  }
+
+  @media screen and (max-width: 800px) {
+    flex-direction: column-reverse;
+
+    .links {
+      flex-direction: column;
+      text-align: center;
+
+      &:not(.open) {
+        display: none;
+      }
+
+      .logo {
+        display: none;
+      }
+    }
+  }
+
+  .mobileArea {
+    display: flex;
+    justify-content: space-between;
+
+    @media screen and (min-width: 800px) {
+      display: none;
+    }
+
+    .hamburger {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px;
+      cursor: pointer;
+      width: max-content;
+    }
+  }
+
+  .logo {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+
+    > img {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}

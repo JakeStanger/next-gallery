@@ -1,0 +1,11 @@
+@use 'styles/components';
+
+.image {
+  display: flex;
+  justify-content: center;
+
+  aside {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+}

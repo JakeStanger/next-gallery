@@ -1,0 +1,5 @@
+@use 'styles/components';
+
+.infoTable {
+  @include components.table(2);
+}

@@ -1,0 +1,15 @@
+@use 'styles/colors';
+
+.card {
+  position: relative;
+  margin: 5px;
+  border: 1px solid rgba(colors.$gold, 0.3);
+
+  .info {
+    padding: 5px;
+
+    .title {
+      text-align: center;
+    }
+  }
+}

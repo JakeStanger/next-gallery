@@ -1,0 +1,27 @@
+@use 'styles/colors';
+
+.dropdown {
+  position: relative;
+  width: 160px;
+
+  select {
+    height: 40px;
+    background-color: #fff;
+    border: 1px solid colors.$gold-light;
+    border-radius: 0;
+    width: 150px;
+    padding-left: 4px;
+    margin-right: 10px;
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+
+  .arrow {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    pointer-events: none;
+    width: 0.7em;
+  }
+}

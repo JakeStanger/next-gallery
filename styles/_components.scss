@@ -1,0 +1,53 @@
+@use 'styles/colors';
+
+@mixin table($columns) {
+  display: grid;
+  grid-template-columns: repeat($columns, auto);
+
+  .groupName {
+    grid-column: 1/-1;
+    font-size: 1.3rem;
+    padding-top: 20px;
+  }
+
+  .header {
+    font-size: 1.1rem;
+    padding: 5px;
+    border-bottom: 1px solid colors.$grey-light;
+  }
+
+  .cell {
+    padding: 3px 10px;
+
+    &.stripe {
+      background-color: rgba(colors.$grey-light, 0.07);
+    }
+  }
+
+  @media screen and (max-width: 450px) {
+    font-size: 15px;
+
+    .groupName {
+      font-size: 1.2rem;
+    }
+
+    .header {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+  }
+}
+
+.header {
+  font-size: 1.5rem;
+  padding-top: 20px;
+}
+
+.subHeader {
+  font-size: 1.3rem;
+  padding-top: 20px;
+
+  @media screen and(max-width: 450px) {
+    font-size: 1.2rem;
+  }
+}

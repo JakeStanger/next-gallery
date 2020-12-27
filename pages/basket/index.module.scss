@@ -1,0 +1,15 @@
+.controls {
+  padding: 10px;
+
+  button + button {
+    margin-left: 5px;
+  }
+}
+
+.dialogButtons {
+  padding-top: 5px;
+
+  button + button {
+    margin-left: 5px;
+  }
+}

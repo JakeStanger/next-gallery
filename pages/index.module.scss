@@ -1,0 +1,25 @@
+@use 'styles/colors';
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 10px auto auto;
+}
+
+.search {
+  display: flex;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 30px;
+
+  input {
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(colors.$grey, 0.3);
+    padding: 10px;
+    font-family: Raleway, sans-serif;
+  }
+}

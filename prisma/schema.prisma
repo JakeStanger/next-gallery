@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+  //  previewFeatures = ["nativeTypes"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  images Image[]
+}
+
+model Event {
+  id        Int      @id @default(autoincrement())
+  name      String
+  location  String?
+  startTime DateTime
+  endTime   DateTime
+}
+
+model Group {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  primaryImage   Image @relation(name: "PrimaryImage", fields: [primaryImageId], references: [id])
+  primaryImageId Int
+
+  images Image[] @relation("ImageGroup")
+}
+
+model Image {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String? // FIXME: @db.Text
+  width       Int
+  height      Int
+  exposure    Float?
+  focalLength Int?
+  aperture    Int?
+  iso         Int?
+  cameraModel String?
+  timeTaken   DateTime?
+
+  categories   Category[]
+  location     Location?   @relation(fields: [locationId], references: [id])
+  tags         Tag[]
+  priceGroup   PriceGroup? @relation(fields: [priceGroupId], references: [id])
+  locationId   Int?
+  priceGroupId Int?
+
+  group   Group?  @relation(name: "ImageGroup", fields: [groupId], references: [id])
+  groupId Int?
+  Group   Group[] @relation("PrimaryImage")
+}
+
+model Location {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  images Image[]
+}
+
+model Price {
+  id          Int    @id @default(autoincrement())
+  name        String
+  costRegular Float
+  costSpecial Float?
+  costPostage Float?
+
+  priceGroup   PriceGroup @relation(fields: [priceGroupId], references: [id])
+  priceGroupId Int
+}
+
+model PriceGroup {
+  id             Int     @id @default(autoincrement())
+  name           String  @unique
+  priceTypeName  String?
+  regularName    String?
+  specialName    String?
+  canPostSpecial Boolean @default(false)
+
+  images Image[]
+  prices Price[]
+}
+
+model Tag {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  images Image[]
+}

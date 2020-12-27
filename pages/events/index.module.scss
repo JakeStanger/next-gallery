@@ -1,0 +1,5 @@
+@use '../../styles/components';
+
+.eventsTable {
+  @include components.table(3);
+}
