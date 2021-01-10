@@ -15,6 +15,7 @@ import Button from '../../components/button/Button';
 import BasketDialog from '../../components/dialog/basketDialog/BasketDialog';
 import getImageUrl from '../../lib/getImageUrl';
 import Error from 'next/error';
+import useImageSrc from '../../lib/utils/useImageSrc';
 
 interface IProps {
   image: Image & {
@@ -74,7 +75,7 @@ const Photo: React.FC<IProps> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  const imageLink = getImageUrl(image.id, true);
+  const imageLink = useImageSrc(image.id, true);
 
   return (
     <Layout
