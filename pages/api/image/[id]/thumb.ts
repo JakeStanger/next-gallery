@@ -3,7 +3,7 @@ import getImageUrl from '../../../../lib/getImageUrl';
 import * as fs from 'fs';
 import path from 'path';
 import getJpeg from '../../../../lib/api/image/getJpeg';
-import secure from '../../../../lib/api/secure';
+import secure from '../../../../lib/api/middleware/secure';
 
 // fixes for next.js <Image> component
 export const config = { api: { bodyParser: false, externalResolver: true } };

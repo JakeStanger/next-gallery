@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../prisma';
-import an from '../utils/an';
+import prisma from '../../prisma';
+import an from '../../utils/an';
 
 interface IAggregate {
   model: keyof typeof prisma;

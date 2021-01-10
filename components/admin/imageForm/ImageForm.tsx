@@ -5,7 +5,7 @@ import FormField from './formField/FormField';
 import FullImage from '../../../lib/types/FullImage';
 import IFormFieldProps, { FieldTypes } from './formField/IFormFieldProps';
 import { Button } from '@material-ui/core';
-import processImageReqBody from '../../../lib/processImageReqBody';
+import processImageReqBody from '../../../lib/api/processors/processImageReqBody';
 
 function handleChange(
   state: Partial<FullImage>,

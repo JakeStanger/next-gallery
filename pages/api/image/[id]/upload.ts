@@ -13,7 +13,7 @@ import mkdirp from 'mkdirp';
 import s3 from '../../../../lib/aws';
 import { S3 } from 'aws-sdk';
 import { Image } from '@prisma/client';
-import secure from '../../../../lib/api/secure';
+import secure from '../../../../lib/api/middleware/secure';
 
 export const config = {
   api: {

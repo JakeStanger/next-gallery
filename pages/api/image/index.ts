@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import handleListCrud from '../../../lib/api/handleListCrud';
-import secure from '../../../lib/api/secure';
+import handleListCrud from '../../../lib/api/handlers/handleListCrud';
+import secure from '../../../lib/api/middleware/secure';
 
 export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   await handleListCrud({

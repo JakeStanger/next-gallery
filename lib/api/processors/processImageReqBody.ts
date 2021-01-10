@@ -1,5 +1,5 @@
 import { ImageUpdateInput } from '@prisma/client';
-import FullImage from './types/FullImage';
+import FullImage from '../../types/FullImage';
 import { cloneDeep } from 'lodash';
 
 // TODO: Type editValues

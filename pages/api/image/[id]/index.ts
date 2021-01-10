@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import handleItemCrud from '../../../../lib/api/handleItemCrud';
+import handleItemCrud from '../../../../lib/api/handlers/handleItemCrud';
 import * as fs from 'fs';
 import path from 'path';
 import s3 from '../../../../lib/aws';
-import secure from '../../../../lib/api/secure';
+import secure from '../../../../lib/api/middleware/secure';
 
 export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'DELETE') {
