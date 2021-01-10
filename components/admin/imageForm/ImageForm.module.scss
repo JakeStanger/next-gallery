@@ -1,0 +1,28 @@
+@use 'styles/colors';
+@use 'styles/components';
+
+.form {
+  flex: 1;
+  min-width: 360px;
+  margin-bottom: 10px;
+
+  .fieldGroup {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 30px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid colors.$grey-light;
+
+    > * + * {
+      margin-top: 25px;
+    }
+  }
+
+  .buttons {
+    > * + * {
+      margin-left: 10px;
+    }
+
+    margin-top: 20px;
+  }
+}

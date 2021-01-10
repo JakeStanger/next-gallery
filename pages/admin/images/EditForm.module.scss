@@ -1,0 +1,74 @@
+@use 'styles/colors';
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+
+  .infoPane {
+    margin-right: 20px;
+    margin-bottom: 20px;
+    width: 360px;
+
+    .buttons {
+      > * {
+        margin: 5px;
+      }
+    }
+
+    .dropArea {
+      cursor: pointer;
+      width: 360px;
+      border: 1px solid colors.$grey-light;
+
+      .label {
+        text-align: center;
+        padding: 40px;
+      }
+
+      .progressBar {
+        display: flex;
+
+        .label {
+          padding: 3px;
+        }
+
+        .barArea {
+          flex: 1;
+          border: 1px solid colors.$grey-light;
+          margin: 3px;
+
+          .bar {
+            background-color: colors.$gold;
+            height: 100%;
+          }
+        }
+      }
+
+      &.dragging {
+        background-color: colors.$gold-light;
+      }
+    }
+
+    .uploadInfo {
+      margin-top: 10px;
+
+      .messages {
+        border: 1px solid colors.$grey-light;
+        padding: 5px;
+        margin: 5px 0;
+
+        .message {
+          &::after {
+            content: '...';
+          }
+        }
+      }
+    }
+  }
+
+  .error {
+    padding: 5px;
+    background-color: #fdf2f5;
+    border: 1px solid colors.$grey-light;
+  }
+}

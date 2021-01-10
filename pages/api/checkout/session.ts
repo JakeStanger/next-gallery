@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { IExpandedBasketItem } from '../../../lib/services/IBasketItem';
 import canShipBasket from '../../../lib/canShipBasket';
 import Stripe from 'stripe';
+import getImageUrl from '../../../lib/getImageUrl';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2020-08-27',
@@ -22,10 +23,14 @@ function absoluteUrl(req: NextApiRequest, setLocalhost: string) {
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'GET': {
-      const session = await stripe.checkout.sessions.retrieve(req.query.session_id[0]);
+      const session = await stripe.checkout.sessions.retrieve(
+        req.query.session_id[0]
+      );
       if (session) {
-        const customer = await stripe.customers.retrieve(session.customer! as string);
-        return res.json({session, customer});
+        const customer = await stripe.customers.retrieve(
+          session.customer! as string
+        );
+        return res.json({ session, customer });
       } else {
         return res.status(404);
       }
@@ -40,7 +45,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       const basketItems: Stripe.Checkout.SessionCreateParams.LineItem[] = basket.map(
         (item) => {
-          const priceName = `${
+          const priceName = `${item.price.name} - ${
             item.special
               ? item.price.priceGroup.specialName
               : item.price.priceGroup.regularName
@@ -51,18 +56,20 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             100;
 
           return {
+            quantity: item.quantity,
             price_data: {
               currency: 'gbp',
+              unit_amount: amount,
               product_data: {
                 name: `${item.image.name} [${priceName}]`,
-                description: priceName,
                 images: [
-                  `${publicAddress}/images/photos/thumb/${item.imageId}.webp`,
+                  new URL(
+                    getImageUrl(item.imageId, false, true),
+                    process.env.NEXT_PUBLIC_CDN_URL ?? publicAddress
+                  ).toString(),
                 ],
               },
-              unit_amount: amount,
             },
-            quantity: item.quantity,
           };
         }
       );
@@ -94,7 +101,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         shipping_address_collection: {
           allowed_countries: ['GB'],
         },
-
         success_url: `${publicAddress}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${publicAddress}/basket`,
       });
