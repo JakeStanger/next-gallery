@@ -21,3 +21,9 @@ it to be relatively easy to hack and customise.
 - Automatic image optimisation regardless of host.
 - Static page generation, even for dynamic content, using NextJS's revalidation features.
 - Server-side and client-side Sentry support for error tracking
+
+## TODO
+
+- Fix admin panel quick edit lookups
+- Remove rstanger-specific content - abstract into database?
+- Document code
