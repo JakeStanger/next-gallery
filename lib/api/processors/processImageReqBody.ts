@@ -42,6 +42,11 @@ function processImageReqBody(id: number, editValues: Partial<FullImage>) {
     saveValues.priceGroup = {
       connect: { id: editValues.priceGroup?.id },
     };
+  } else if (!!editValues.priceGroupId) {
+    saveValues.priceGroup = {
+      connect: { id: parseInt(editValues.priceGroupId.toString()) },
+    };
+    delete (saveValues as any).priceGroupId;
   }
 
   if (editValues.group !== undefined) {
@@ -58,6 +63,14 @@ function processImageReqBody(id: number, editValues: Partial<FullImage>) {
     } else {
       saveValues.group = { disconnect: true };
     }
+  } else if (!!editValues.groupId) {
+    saveValues.group = {
+      connect: {
+        id: parseInt(editValues.groupId.toString())
+      }
+    }
+
+    delete (saveValues as any).groupId;
   }
 
   if (editValues.tags) {

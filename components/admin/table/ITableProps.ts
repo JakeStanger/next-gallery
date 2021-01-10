@@ -5,6 +5,7 @@ interface ITableProps<RowData extends Object> {
   expands?: string[];
   columns: Column<RowData>[];
   allowAdd: boolean;
+  onProcessData?: (id: number, data: RowData) => any;
 }
 
 export default ITableProps;

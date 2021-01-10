@@ -7,6 +7,7 @@ import prisma from '../../../lib/prisma';
 import { Category, Group, PriceGroup } from '@prisma/client';
 import Link from 'next/link';
 import { Button } from '@material-ui/core';
+import processImageReqBody from '../../../lib/api/processors/processImageReqBody';
 
 interface IServerSideProps {
   groups: Group[];
@@ -49,6 +50,7 @@ const PriceGroups: React.FC<IServerSideProps> = ({
           endpoint={'image'}
           expands={['categories']}
           allowAdd={false}
+          onProcessData={processImageReqBody}
           columns={[
             {
               title: 'Image',

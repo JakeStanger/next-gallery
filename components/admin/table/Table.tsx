@@ -4,20 +4,25 @@ import MaterialTable from 'material-table';
 import useFetchMany from './useFetchMany';
 import { omitBy } from 'lodash';
 
-const Table: React.FC<ITableProps<any>> = <RowData extends { id: number, [key: string]: any }>({
+const Table: React.FC<ITableProps<any>> = <
+  RowData extends { id: number; [key: string]: any }
+>({
   endpoint,
   columns,
   allowAdd,
   expands,
+  onProcessData,
 }: ITableProps<RowData>) => {
   const fetchData = useFetchMany<RowData>(endpoint, expands);
 
   const onRowAdd = useCallback(
     (newData: RowData) => {
+      const data = onProcessData ? onProcessData(newData.id, newData) : newData;
+
       return fetch(`/api/${endpoint}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(newData),
+        body: JSON.stringify(data),
       });
     },
     [endpoint]
@@ -29,10 +34,14 @@ const Table: React.FC<ITableProps<any>> = <RowData extends { id: number, [key: s
         ? omitBy(newData, (v, k) => v === oldData[k])
         : newData;
 
+      const data = onProcessData
+        ? onProcessData(oldData?.id ?? newData.id, diff as RowData)
+        : diff;
+
       return fetch(`/api/${endpoint}/` + newData.id, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(diff),
+        body: JSON.stringify(data),
       });
     },
     [endpoint]
@@ -51,6 +60,7 @@ const Table: React.FC<ITableProps<any>> = <RowData extends { id: number, [key: s
     window.scrollTo({ top: 0 });
   }, []);
 
+  // turn filtering off by default
   const fullColumns = columns.map((c) => ({
     ...c,
     filtering: c.filtering ?? false,
@@ -68,7 +78,6 @@ const Table: React.FC<ITableProps<any>> = <RowData extends { id: number, [key: s
         onRowUpdate,
         onRowDelete,
       }}
-
       onChangePage={onChangePage}
     />
   );
