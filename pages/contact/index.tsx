@@ -1,13 +1,20 @@
-import Layout from '../../components/layout';
+import Layout from '../../components/Layout';
 import { GetStaticProps } from 'next';
 import Image from 'next/image';
 import { getMarkdownContent } from '../../lib/utils/content';
 import LinkLarge from '../../components/linkLarge/LinkLarge';
 import styles from './index.module.scss';
 import links from '../../content/contacts/links';
-import IStaticProps from './IStaticProps';
+import ILinkLargeProps from '../../components/linkLarge/ILinkLargeProps';
+import meta from '../../content/meta';
 
-const index: React.FC<IStaticProps> = ({ preamble, content, links }) => {
+interface IStaticProps {
+  preamble: string;
+  content: string;
+  links: ILinkLargeProps[];
+}
+
+const Contact: React.FC<IStaticProps> = ({ preamble, content, links }) => {
   return (
     <Layout title={'Contact & About'}>
       <div className={styles.links}>
@@ -19,9 +26,10 @@ const index: React.FC<IStaticProps> = ({ preamble, content, links }) => {
       <div>
         <div className={styles.image}>
           <Image
-            src={'/images/roger.jpg'}
-            alt={'Roger Stanger'}
-            title={'Roger Stanger'}
+            src={'/images/photo.jpg'}
+            alt={meta.artistName}
+            title={meta.artistName}
+            // this fits nicely
             width={700}
             height={467}
             layout={'responsive'}
@@ -45,4 +53,4 @@ export const getStaticProps: GetStaticProps<IStaticProps> = async () => {
   };
 };
 
-export default index;
+export default Contact;

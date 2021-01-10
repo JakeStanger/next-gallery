@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import Layout from '../../components/layout';
-import { GetStaticProps } from 'next';
-import IStaticProps from './IStaticProps';
+import Layout from '../../components/Layout';
+import { GetServerSideProps } from 'next';
 import BasketService from '../../lib/services/basket';
 import IBasketItem from '../../lib/services/IBasketItem';
 import prisma from '../../lib/prisma';
-import { Price } from '@prisma/client';
+import { Image, Price, PriceGroup } from '@prisma/client';
 import { useRouter } from 'next/router';
 import Button from '../../components/button/Button';
 import styles from './index.module.scss';
@@ -14,8 +13,12 @@ import BasketItemCard from '../../components/card/basketItemCard/BasketItemCard'
 import Masonry from 'react-masonry-component';
 import Link from 'next/link';
 import canShipBasket from '../../lib/canShipBasket';
-import { Head } from 'next/document';
 import getStripe from '../../lib/getStripe';
+
+interface IServerSideProps {
+  images: Image[];
+  prices: (Price & { priceGroup: PriceGroup })[];
+}
 
 function getBasketTotal(basket: IBasketItem[], prices: Price[]) {
   if (!basket.length) return 0;
@@ -26,10 +29,11 @@ function getBasketTotal(basket: IBasketItem[], prices: Price[]) {
         (item.special ? price.costSpecial! : price.costRegular!) * item.quantity
       );
     })
-    .reduce((total, price) => total + price);
+    .reduce((total, price) => total + price)
+    .toFixed(2);
 }
 
-const Basket: React.FC<IStaticProps> = ({ images, prices }) => {
+const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
   const [basket, setBasket] = useState<IBasketItem[]>([]);
 
   const [deleteItem, setDeleteItem] = useState<IBasketItem | undefined | null>(
@@ -58,20 +62,12 @@ const Basket: React.FC<IStaticProps> = ({ images, prices }) => {
     async (ship: boolean) => {
       const stripe = await getStripe();
 
-      const sessionId = await fetch('/api/checkout/session', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-        body: JSON.stringify({
-          ship,
-          basket: basket.map((i) => ({
-            ...i,
-            price: prices.find((p) => p.id === i.priceId)!,
-            image: images.find((im) => im.id === i.imageId)!,
-          })),
-        }),
-      })
-        .then((r) => r.json())
-        .then((r) => r.id);
+      const sessionId = await BasketService.createSession(
+        basket,
+        images,
+        prices,
+        ship
+      ).then((r) => r.id);
 
       stripe?.redirectToCheckout({ sessionId });
     },
@@ -172,7 +168,7 @@ const Basket: React.FC<IStaticProps> = ({ images, prices }) => {
   );
 };
 
-export const getStaticProps: GetStaticProps<IStaticProps> = async () => {
+export const getServerSideProps: GetServerSideProps<IServerSideProps> = async () => {
   const images = await prisma.image.findMany();
   const prices = await prisma.price.findMany({
     include: { priceGroup: true },

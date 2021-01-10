@@ -44,11 +44,7 @@ const Gallery: React.FC<IGalleryProps> = ({ imagesAndGroups }) => {
             key={`g-${imageOrGroup.id}`}
           />
         ) : (
-          <Card
-            image={imageOrGroup}
-            width={imageSize}
-            key={imageOrGroup.id}
-          />
+          <Card image={imageOrGroup} width={imageSize} key={imageOrGroup.id} />
         );
       })}
     </Masonry>

@@ -1,9 +1,8 @@
-import Layout from '../../components/layout';
-import { GetServerSideProps } from 'next';
+import Layout from '../../components/Layout';
+import { GetStaticPaths, GetStaticProps } from 'next';
 import remark from 'remark';
 import html from 'remark-html';
-import IServerSideProps from './IServerSideProps';
-import NextImage from 'next/image';
+import ImageComponent from '../../components/image/Image';
 import React, { useCallback, useEffect, useState } from 'react';
 import styles from './[id].module.scss';
 import PriceTable from '../../components/table/priceTable/PriceTable';
@@ -11,9 +10,20 @@ import Fraction from 'fraction.js';
 import TechInfoTable from '../../components/table/techInfoTable/TechInfoTable';
 import Link from 'next/link';
 import prisma from '../../lib/prisma';
-import { Image } from '@prisma/client';
+import { Image, Location, Price, PriceGroup } from '@prisma/client';
 import Button from '../../components/button/Button';
 import BasketDialog from '../../components/dialog/basketDialog/BasketDialog';
+import getImageUrl from '../../lib/getImageUrl';
+import Error from 'next/error';
+
+interface IProps {
+  image: Image & {
+    priceGroup: PriceGroup & { prices: Price[] } | null;
+    location: Location | null;
+  };
+  description: string | null;
+  exposure: string | null;
+}
 
 /**
  * Gets the width of height for the image preview.
@@ -35,11 +45,13 @@ function getImageDimensions(image: Image) {
   return { width: image.width, height: image.height };
 }
 
-const Photo: React.FC<IServerSideProps> = ({
+const Photo: React.FC<IProps> = ({
   image,
   description,
   exposure,
 }) => {
+  if(!image) return <Error statusCode={404} />;
+
   const [dimensions, setDimensions] = useState({
     width: image.width,
     height: image.height,
@@ -62,20 +74,25 @@ const Photo: React.FC<IServerSideProps> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  const imageLink = `/images/photos/marked/${image.id}.webp`;
+  const imageLink = getImageUrl(image.id, true);
 
   return (
-    <Layout title={image.name}>
+    <Layout
+      title={image.name}
+      description={image.description || undefined}
+      imageUrl={getImageUrl(image.id, false)}
+    >
       <Link href={image.groupId ? `/group/${image.groupId}` : '/'}>
         <a>Back to {image.groupId ? 'group' : 'gallery'}</a>
       </Link>
       <div className={styles.image}>
         <a href={imageLink} target={'_blank'}>
-          <NextImage
-            {...dimensions}
-            src={imageLink}
+          <ImageComponent
+            imageId={image.id}
+            full={true}
             alt={image.name}
             quality={90}
+            {...dimensions}
           />
           <aside>Click to view full resolution</aside>
         </a>
@@ -83,7 +100,7 @@ const Photo: React.FC<IServerSideProps> = ({
       <header>
         <div className={styles.header}>{image.name}</div>
       </header>
-      <div>{image.location?.name}</div>
+      <div className={styles.location}>{image.location?.name}</div>
       {description && (
         <div dangerouslySetInnerHTML={{ __html: description }}></div>
       )}
@@ -97,16 +114,21 @@ const Photo: React.FC<IServerSideProps> = ({
                 name: `Prices - ${image.priceGroup.name}`,
               },
             ]}
+            includePostage={false}
           />
           <TechInfoTable image={image} exposure={exposure} />
-          <BasketDialog image={image} isOpen={showBasketDialog} onDismiss={toggleBasketDialog} />
+          <BasketDialog
+            image={image}
+            isOpen={showBasketDialog}
+            onDismiss={toggleBasketDialog}
+          />
         </>
       )}
     </Layout>
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
   const image = await prisma.image.findUnique({
     where: { id: parseInt(params?.id as string) },
     include: { priceGroup: { include: { prices: true } }, location: true },
@@ -126,7 +148,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   // calculate exposure on server
   // to avoid needing fraction.js on client
   const exposure = image.exposure
-    ? new Fraction(image.exposure).simplify().toFraction()
+    ? new Fraction(image.exposure)
+        .simplify(image.exposure < 0.01 ? 0.0001 : 0.001)
+        .toFraction(true)
     : null;
 
   return {
@@ -135,7 +159,20 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       description,
       exposure,
     },
+    revalidate: 15
   };
 };
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const images = await prisma.image.findMany({
+    select: { id: true },
+  });
+
+  return {
+    paths: images.map((i) => ({ params: { id: i.id.toString() } })),
+    fallback: 'blocking',
+  };
+};
+
 
 export default Photo;

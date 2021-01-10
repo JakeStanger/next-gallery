@@ -7,17 +7,28 @@ import { css } from '../../lib/utils/css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 
-const Logo: React.FC = () => {
+const Branding: React.FC<{ title?: string; homeUrl?: string }> = ({
+  title,
+  homeUrl,
+}) => {
   return (
-    <Link href={'/'}>
-      <div className={styles.logo}>
-        <img src={'/images/logo-small_64.png'} alt={'logo'} />
+    <Link href={homeUrl ?? '/'}>
+      <div className={styles.branding}>
+        <div className={styles.logo}>
+          <img
+            src={'/images/logo-small_64.png'}
+            alt={'logo'}
+            width={64}
+            height={64}
+          />
+        </div>
+        {title && <div className={styles.title}>{title}</div>}
       </div>
     </Link>
   );
 };
 
-const Navbar: React.FC<INavbarProps> = ({ links }) => {
+const Navbar: React.FC<INavbarProps> = ({ links, title, homeUrl }) => {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
@@ -29,7 +40,7 @@ const Navbar: React.FC<INavbarProps> = ({ links }) => {
   return (
     <nav className={styles.navBar}>
       <div className={css(styles.links, open && styles.open)}>
-        <Logo />
+        <Branding title={title} homeUrl={homeUrl} />
         {links.map((link) => (
           <div
             key={link.href}
@@ -50,7 +61,7 @@ const Navbar: React.FC<INavbarProps> = ({ links }) => {
       </div>
       <div>
         <div className={styles.mobileArea}>
-          <Logo />
+          <Branding title={title} homeUrl={homeUrl} />
           <div className={styles.hamburger} onClick={toggleOpen}>
             <FontAwesomeIcon icon={faBars}></FontAwesomeIcon>
           </div>

@@ -1,25 +1,61 @@
-import Layout from '../components/layout';
-import { GetServerSideProps } from 'next';
+import Layout from '../components/Layout';
+import { GetStaticProps } from 'next';
 import { Image, Location, Category, Tag } from '@prisma/client';
-import { useMemo, useState } from 'react';
-import IServerSideProps from './IServerSideProps';
+import { useCallback, useRef, useState } from 'react';
 import { sortBy, shuffle } from 'lodash';
 import Gallery from '../components/gallery/Gallery';
 import isGroup from '../lib/utils/isGroup';
 import prisma from '../lib/prisma';
 import CategoryCard from '../components/card/categoryCard/CategoryCard';
 import styles from './index.module.scss';
+import scrollIntoView from 'scroll-into-view-if-needed';
+import ScrollTop from '../components/scrollTop/ScrollTop';
+import useDebouncedMemo from '../lib/utils/useDebouncedMemo';
+
+interface IServerSideProps {
+  categories: (Category & {
+    images: (Image & { tags: Tag[]; location: Location })[];
+    thumbnail: Image;
+  })[];
+}
 
 const Home: React.FC<IServerSideProps> = ({ categories }) => {
+  const containerRef = useRef<HTMLInputElement>(null);
+
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<
     Category & { images: (Image & { tags: Tag[]; location: Location })[] }
   >(categories[0]);
 
-  const images = useMemo(
+  const updateCategory = useCallback(
+    (
+      category: Category & {
+        images: (Image & { tags: Tag[]; location: Location })[];
+      }
+    ) => {
+      setSelectedCategory(category);
+      setQuery('');
+
+      scrollIntoView(containerRef.current!, {
+        scrollMode: 'if-needed',
+        behavior: 'smooth',
+        block: 'start',
+      });
+    },
+    []
+  );
+
+  const onQueryChange = useCallback(
+    (ev: React.ChangeEvent<HTMLInputElement>) => {
+      setQuery(ev.target.value);
+    },
+    []
+  );
+
+  const images = useDebouncedMemo(
     () =>
       selectedCategory.images.filter((i) => {
-        const q = query.toLowerCase();
+        const q = query.toLowerCase().trim();
         return (
           i.name.toLowerCase().includes(q) ||
           i.location?.name.toLowerCase().includes(q) ||
@@ -30,7 +66,8 @@ const Home: React.FC<IServerSideProps> = ({ categories }) => {
             .includes(q)
         );
       }),
-    [query, selectedCategory]
+    [query, selectedCategory],
+    100
   );
 
   return (
@@ -41,28 +78,31 @@ const Home: React.FC<IServerSideProps> = ({ categories }) => {
             key={category.id}
             category={category}
             isSelected={selectedCategory.id === category.id}
-            onSelect={setSelectedCategory}
+            onSelect={updateCategory}
           />
         ))}
       </section>
       <section className={styles.search}>
         <input
+          ref={containerRef}
           value={query}
           placeholder={'🔍 search images'}
-          onChange={(ev) => setQuery(ev.target.value)}
+          onChange={onQueryChange}
         />
       </section>
-      <Gallery imagesAndGroups={images} />
+      <Gallery imagesAndGroups={images}  />
+      <ScrollTop />
     </Layout>
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const groups = await prisma.group.findMany({
     include: {
       primaryImage: true,
       images: { include: { categories: true } },
     },
+    where: { NOT: { images: { every: { id: { in: [] } } } } },
   });
 
   const images = await prisma.image.findMany({
@@ -86,6 +126,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     images,
   });
 
+  // @ts-ignore FIXME: typing issues
   categories = categories.map((category) => {
     const categoryGroups = groups.filter(
       (group) =>
@@ -105,7 +146,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
       )[0],
       images: sortBy([...category.images, ...categoryGroups], (item) =>
         isGroup(item)
-          ? -(item.primaryImage.timeTaken || 0)
+          ? -(item.primaryImage?.timeTaken || 0)
           : -(item.timeTaken || 0)
       ),
     };
@@ -115,6 +156,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     props: {
       categories,
     },
+    revalidate: 30
   };
 };
 

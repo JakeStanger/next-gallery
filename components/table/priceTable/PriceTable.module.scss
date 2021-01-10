@@ -3,4 +3,8 @@
 
 .priceTable {
   @include components.table(4);
+
+  &.noPostage {
+    grid-template-columns: repeat(3, auto);
+  }
 }

@@ -28,7 +28,7 @@ const TechInfoTable: React.FC<ITechInfoTableProps> = ({ image, exposure }) => {
         {exposure && (
           <>
             <div className={styles.cell}>Exposure</div>
-            <div className={styles.cell}>{exposure}</div>
+            <div className={styles.cell}>{exposure}s</div>
           </>
         )}
 

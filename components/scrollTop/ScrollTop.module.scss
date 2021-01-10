@@ -1,0 +1,29 @@
+@use 'styles/colors';
+
+.scrollTop {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: white;
+  z-index: 1000;
+  cursor: pointer;
+  border-radius: 50%;
+  animation: fadeIn 0.3s;
+
+  .icon {
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: colors.$grey-dark;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0.5;
+  }
+}

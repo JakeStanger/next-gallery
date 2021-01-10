@@ -12,10 +12,12 @@ const Price: React.FC<{ className: string; price: number | null }> = ({
   </div>
 );
 
-const PriceTable: React.FC<IPriceTableProps> = ({ priceGroups }) => {
+const PriceTable: React.FC<IPriceTableProps> = ({ priceGroups, includePostage }) => {
+  const excludePostage = includePostage === false;
+
   return (
     <div>
-      <div className={styles.priceTable}>
+      <div className={css(styles.priceTable, excludePostage && styles.noPostage)}>
         {priceGroups.map((priceGroup, i) => (
           <React.Fragment key={i}>
             <div className={styles.groupName}>{priceGroup.name}</div>
@@ -28,7 +30,7 @@ const PriceTable: React.FC<IPriceTableProps> = ({ priceGroups }) => {
             <div className={styles.header}>
               {priceGroup.specialName || 'Special'}
             </div>
-            <div className={styles.header}>Postage</div>
+            {!excludePostage && <div className={styles.header}>Postage</div>}
             {priceGroup.prices.map((price, i) => {
               const className = css(styles.cell, i % 2 === 1 && styles.stripe);
               return (
@@ -36,7 +38,7 @@ const PriceTable: React.FC<IPriceTableProps> = ({ priceGroups }) => {
                   <div className={className}>{price.name}</div>
                   <Price className={className} price={price.costRegular} />
                   <Price className={className} price={price.costSpecial} />
-                  <Price className={className} price={price.costPostage} />
+                  {!excludePostage && <Price className={className} price={price.costPostage} />}
                 </React.Fragment>
               );
             })}

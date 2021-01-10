@@ -1,5 +1,5 @@
 import { Image } from '@prisma/client';
-import { GroupWithImages } from '../../pages/IServerSideProps';
+import GroupWithImages from '../../lib/types/GroupWithImages';
 
 interface IGalleryProps {
   imagesAndGroups: (Image | GroupWithImages)[];

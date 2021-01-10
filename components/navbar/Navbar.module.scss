@@ -14,7 +14,10 @@
         color: colors.$grey;
         text-decoration: none;
         padding: 10px;
-        display: block;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
       }
 
       &.active a {
@@ -34,7 +37,7 @@
         display: none;
       }
 
-      .logo {
+      .branding {
         display: none;
       }
     }
@@ -58,16 +61,31 @@
     }
   }
 
-  .logo {
-    padding: 8px;
+  .branding {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    cursor: pointer;
 
-    > img {
-      width: 32px;
-      height: 32px;
+    .logo {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: pointer;
+
+      > img {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .title {
+      padding-right: 10px;
+      margin: 10px 0 10px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: pointer;
+      color: colors.$gold;
+      border-right: 1px solid colors.$grey-light;
     }
   }
 }

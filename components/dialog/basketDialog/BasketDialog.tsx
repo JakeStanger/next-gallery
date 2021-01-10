@@ -14,7 +14,7 @@ import Checkbox from '../../checkbox/Checkbox';
 const BasketDialog: React.FC<IBasketDialogProps> = ({ image, ...props }) => {
   const router = useRouter();
 
-  const prices = image.priceGroup.prices;
+  const prices = image.priceGroup?.prices || [];
 
   const [priceId, setPriceId] = useState<number>(prices[0]?.id);
   const [framed, setFramed] = useState(false);
@@ -77,7 +77,7 @@ const BasketDialog: React.FC<IBasketDialogProps> = ({ image, ...props }) => {
                 checked={framed}
                 onChange={setFramed}
                 label={
-                  image.priceGroup.name !== 'Other' ? 'Framed' : 'Pack of 8'
+                  image.priceGroup?.specialName || 'Special'
                 }
               />
             </div>

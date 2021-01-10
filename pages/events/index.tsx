@@ -1,12 +1,17 @@
 import React from 'react';
 import styles from './index.module.scss';
-import Layout from '../../components/layout';
-import { GetServerSideProps } from 'next';
-import IServerSideProps from './IServerSideProps';
+import Layout from '../../components/Layout';
+import { GetStaticProps } from 'next';
 import { getMarkdownContent } from '../../lib/utils/content';
 import { DateTime } from 'luxon';
 import { css } from '../../lib/utils/css';
 import prisma from '../../lib/prisma';
+import { Event } from '@prisma/client';
+
+interface IProps {
+  preamble: string;
+  events: Event[];
+}
 
 const Interval: React.FC<{
   className: string;
@@ -31,7 +36,7 @@ const Interval: React.FC<{
   );
 };
 
-const index: React.FC<IServerSideProps> = ({ preamble, events }) => {
+const index: React.FC<IProps> = ({ preamble, events }) => {
   return (
     <Layout title={'Events'}>
       <div dangerouslySetInnerHTML={{ __html: preamble }}></div>
@@ -59,7 +64,7 @@ const index: React.FC<IServerSideProps> = ({ preamble, events }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<IServerSideProps> = async () => {
+export const getStaticProps: GetStaticProps<IProps> = async () => {
   const events = await prisma.event
     .findMany({ where: { endTime: { gt: new Date() } } })
 
@@ -70,6 +75,7 @@ export const getServerSideProps: GetServerSideProps<IServerSideProps> = async ()
       preamble,
       events,
     },
+    revalidate: 15
   };
 };
 

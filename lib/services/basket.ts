@@ -56,6 +56,29 @@ class BasketService {
   private static saveBasket(basket: IBasketItem[]) {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(basket));
   }
+
+  public static async createSession(
+    basket: IBasketItem[],
+    images: Image[],
+    prices: Price[],
+    ship: boolean
+  ) {
+    return await fetch('/api/checkout/session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        ship,
+        basket: basket.map((i) => ({
+          ...i,
+          price: prices.find((p) => p.id === i.priceId)!,
+          image: images.find((im) => im.id === i.imageId)!,
+        })),
+      }),
+    }).then((r) => r.json());
+  }
 }
 
 export default BasketService;

@@ -23,7 +23,8 @@ const BasketItemCard: React.FC<IBasketItemCardProps> = ({
           : price.priceGroup.regularName}
       </div>
       <div>
-        £{baseCost} x {basketItem.quantity} = £{baseCost * basketItem.quantity}
+        £{baseCost.toFixed(2)} x {basketItem.quantity} = £
+        {(baseCost * basketItem.quantity).toFixed(2)}
       </div>
       <div className={styles.button} onClick={() => onDelete(basketItem)}>
         <FontAwesomeIcon icon={faTrash} />

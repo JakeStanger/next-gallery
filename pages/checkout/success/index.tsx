@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './index.module.scss';
-import Layout from '../../../components/layout';
+import Layout from '../../../components/Layout';
 import { GetServerSideProps } from 'next';
-import IServerSideProps from './IServerSideProps';
 import Stripe from 'stripe';
 import { getMarkdownContent } from '../../../lib/utils/content';
 import Link from 'next/link';
 import { css } from '../../../lib/utils/css';
+import BasketService from '../../../lib/services/basket';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2020-08-27',
 });
+
+interface IServerSideProps {
+  message: string;
+  items: Stripe.LineItem[] | undefined;
+  total: number | null;
+  address: Stripe.Address | undefined;
+  name?: string | null;
+}
 
 const CheckoutSuccess: React.FC<IServerSideProps> = ({
   message,
@@ -18,6 +26,10 @@ const CheckoutSuccess: React.FC<IServerSideProps> = ({
   address,
   name,
 }) => {
+  useEffect(() => {
+    BasketService.emptyBasket();
+  }, []);
+
   return (
     <Layout title={'Payment Successful'}>
       <Link href={'/'}>
@@ -44,13 +56,13 @@ const CheckoutSuccess: React.FC<IServerSideProps> = ({
             items.map((item, i) => {
               const className = css(styles.cell, i % 2 === 1 && styles.stripe);
               return (
-                <>
+                <React.Fragment key={i}>
                   <div className={className}>{item.description}</div>
                   <div className={className}>{item.quantity}</div>
                   <div className={className}>
-                    {(item.amount_total! / 100).toFixed(2)}
+                    £{(item.amount_total! / 100).toFixed(2)}
                   </div>
-                </>
+                </React.Fragment>
               );
             })}
           {total && (
@@ -84,6 +96,7 @@ export const getServerSideProps: GetServerSideProps<IServerSideProps> = async ({
     query.session_id as string,
     { expand: ['line_items'] }
   );
+
   if (!session) {
     return { notFound: true };
   }

@@ -2,8 +2,9 @@ import React from 'react';
 import styles from './Card.module.scss';
 import ICardProps from './ICardProps';
 import Link from 'next/link';
-import NextImage from 'next/image';
+import Image from '../image/Image'; 
 import { css } from '../../lib/utils/css';
+import IImageProps from '../image/IImageProps';
 
 const Card: React.FC<ICardProps> = ({
   image,
@@ -13,15 +14,15 @@ const Card: React.FC<ICardProps> = ({
   href,
   children,
 }) => {
-  const src = `/images/photos/thumb/${image.id}.webp`;
   const height = image.height * (width / image.width);
 
-  const imageProps = {
-    layout: 'responsive' as 'responsive',
+  const imageProps: IImageProps = {
+    imageId: image.id,
+    layout: 'responsive',
     quality: 90,
-    src,
     width,
     height,
+    alt: image.name,
   };
 
   return (
@@ -33,13 +34,13 @@ const Card: React.FC<ICardProps> = ({
       onClick={typeof href === 'function' ? href : undefined}
     >
       {typeof href !== 'function' ? (
-        <Link href={href ?? `/photo/${image.id}`}>
+        <Link href={href ?? `/image/${image.id}`}>
           <a>
-            <NextImage {...imageProps} />
+            <Image {...imageProps} />
           </a>
         </Link>
       ) : (
-        <NextImage {...imageProps} />
+        <Image {...imageProps} />
       )}
       <section className={styles.info}>
         <div className={styles.title}>{title ?? image.name}</div>

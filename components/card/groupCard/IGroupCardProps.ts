@@ -1,4 +1,4 @@
-import { GroupWithImages } from '../../../pages/IServerSideProps';
+import GroupWithImages from '../../../lib/types/GroupWithImages';
 
 interface IGroupCardProps {
   group: GroupWithImages;

@@ -1,5 +1,7 @@
 interface INavbarProps {
   links: ILink[];
+  title?: string;
+  homeUrl?: string;
 }
 
 export interface ILink {
