@@ -3,8 +3,9 @@ import handleItemCrud from '../../../../lib/api/handleItemCrud';
 import * as fs from 'fs';
 import path from 'path';
 import s3 from '../../../../lib/aws';
+import secure from '../../../../lib/api/secure';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'DELETE') {
     const id = req.query.id;
 
@@ -44,4 +45,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   return await handleItemCrud(req, res, 'image');
-};
+});

@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import handleListCrud from '../../../lib/api/handleListCrud';
+import secure from '../../../lib/api/secure';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   await handleListCrud({
     req,
     res,
@@ -13,4 +14,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     ],
     defaultOrderBy: { timeTaken: 'desc' },
   });
-};
+});

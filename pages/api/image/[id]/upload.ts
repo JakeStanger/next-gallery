@@ -13,6 +13,7 @@ import mkdirp from 'mkdirp';
 import s3 from '../../../../lib/aws';
 import { S3 } from 'aws-sdk';
 import { Image } from '@prisma/client';
+import secure from '../../../../lib/api/secure';
 
 export const config = {
   api: {
@@ -20,7 +21,7 @@ export const config = {
   },
 };
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).end('Method Not Allowed');
@@ -149,4 +150,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   fs.unlinkSync(file.path);
 
   res.status(201).end();
-};
+});
