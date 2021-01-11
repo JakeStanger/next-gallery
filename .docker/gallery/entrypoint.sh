@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -euf
+set -ef
 
 if [ -n "$FORCE_REBUILD" ] || [ ! -f ".next/BUILD_ID" ]; then
   echo 'No build found - performing one now'
