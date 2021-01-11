@@ -3,7 +3,7 @@
 set -euf
 
 # check if .next does not exist or is empty
-if [ ! -d ".next" ] || [ -z "$(ls -A .next)" ]; then
+if [ ! -f ".next/BUILD_ID" ]; then
   echo 'No build found - performing one now'
   yarn build
 
