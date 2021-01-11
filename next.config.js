@@ -17,10 +17,7 @@ process.env.SENTRY_DSN = SENTRY_DSN;
 const isProd = NODE_ENV === 'production';
 
 // dirty hack to get commit sha
-const revision = require('child_process')
-  .execSync('git rev-parse HEAD')
-  .toString()
-  .trim();
+const version = require('./package.json').version;
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: ANALYZE === 'true',
@@ -37,7 +34,7 @@ module.exports = withBundleAnalyzer({
   env: {
     // Make the COMMIT_SHA available to the client so that Sentry events can be
     // marked for the release they belong to.
-    NEXT_PUBLIC_COMMIT_SHA: revision,
+    NEXT_PUBLIC_VERSION: version,
   },
   webpack: (config, options) => {
     config.module.rules.push({
@@ -72,7 +69,7 @@ module.exports = withBundleAnalyzer({
           ignore: ['node_modules'],
           stripPrefix: ['webpack://_N_E/'],
           urlPrefix: `~${basePath}/_next`,
-          release: revision,
+          release: version,
         })
       );
     }
