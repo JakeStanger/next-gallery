@@ -8,7 +8,7 @@ COPY ./yarn.lock yarn.lock
 RUN yarn install --frozen-lockfile
 COPY . .
 
-COPY .docker/gallery/entrypoint.sh entrypoint.sh
+COPY ./.docker/gallery/entrypoint.sh entrypoint.sh
 
 RUN yarn prisma generate
 
