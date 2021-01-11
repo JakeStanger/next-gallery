@@ -60,7 +60,6 @@ module.exports = withBundleAnalyzer({
       SENTRY_ORG &&
       SENTRY_PROJECT &&
       SENTRY_AUTH_TOKEN &&
-      revision &&
       isProd
     ) {
       config.plugins.push(
