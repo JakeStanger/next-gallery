@@ -2,8 +2,7 @@
 
 set -euf
 
-# check if .next does not exist or is empty
-if [ ! -f ".next/BUILD_ID" ]; then
+if [ -n "$FORCE_REBUILD" ] || [ ! -f ".next/BUILD_ID" ]; then
   echo 'No build found - performing one now'
   yarn build
 
