@@ -17,4 +17,6 @@ RUN mkdir -p /var/lib/gallery/photos/marked \
 
 EXPOSE 3000
 
+USER node
+
 ENTRYPOINT ["sh", "entrypoint.sh"]
