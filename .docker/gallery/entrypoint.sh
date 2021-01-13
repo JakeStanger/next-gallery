@@ -4,6 +4,7 @@ set -ef
 
 if [ -n "$FORCE_REBUILD" ] || [ ! -f ".next/BUILD_ID" ]; then
   echo 'No build found - performing one now'
+  yarn clean
   yarn build
 
   if [ -n "$AWS_S3_BUCKET_NAME" ]; then
