@@ -3,7 +3,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import remark from 'remark';
 import html from 'remark-html';
 import ImageComponent from '../../components/image/Image';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './[id].module.scss';
 import PriceTable from '../../components/table/priceTable/PriceTable';
 import Fraction from 'fraction.js';
@@ -32,18 +32,23 @@ interface IProps {
  * The NextJS image wrapper doesn't like having a height forced upon it,
  * so we'll scale the image dimensions to the height instead.
  * @param image
+ * @param container
  */
-function getImageDimensions(image: Image) {
+function getImageDimensions(image: Image, container: HTMLDivElement | null) {
+  const maxWidth = container?.getBoundingClientRect().width ?? image.width;
   const maxHeight = window.innerHeight * 0.7; // 70vh
 
-  if (image.height > maxHeight) {
+  const width = Math.min(image.width, maxWidth);
+  const height = image.height / (image.width / width);
+
+  if (height > maxHeight) {
     return {
       height: maxHeight,
-      width: image.width / (image.height / maxHeight),
+      width: width / (height / maxHeight),
     };
   }
 
-  return { width: image.width, height: image.height };
+  return { width, height };
 }
 
 const Photo: React.FC<IProps> = ({
@@ -53,6 +58,8 @@ const Photo: React.FC<IProps> = ({
 }) => {
   if(!image) return <Error statusCode={404} />;
 
+  const imageContainer = useRef<HTMLDivElement>(null);
+
   const [dimensions, setDimensions] = useState({
     width: image.width,
     height: image.height,
@@ -61,7 +68,7 @@ const Photo: React.FC<IProps> = ({
   const [showBasketDialog, setShowBasketDialog] = useState(false);
 
   const updateDimensions = useCallback(() => {
-    setDimensions(getImageDimensions(image));
+    setDimensions(getImageDimensions(image, imageContainer.current));
   }, [image]);
 
   const toggleBasketDialog = useCallback(() => {
@@ -86,8 +93,9 @@ const Photo: React.FC<IProps> = ({
       <Link href={image.groupId ? `/group/${image.groupId}` : '/'}>
         <a>Back to {image.groupId ? 'group' : 'gallery'}</a>
       </Link>
-      <div className={styles.image}>
+      <div className={styles.imageContainer} ref={imageContainer}>
         <a href={imageLink} target={'_blank'}>
+          <div className={styles.image} style={{...dimensions}}>
           <ImageComponent
             imageId={image.id}
             full={true}
@@ -95,6 +103,7 @@ const Photo: React.FC<IProps> = ({
             quality={90}
             {...dimensions}
           />
+          </div>
           <aside>Click to view full resolution</aside>
         </a>
       </div>

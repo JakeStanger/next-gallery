@@ -1,9 +1,11 @@
 @use 'styles/components';
 @use 'styles/colors';
 
-.image {
-  display: flex;
-  justify-content: center;
+.imageContainer {
+  .image {
+    max-width: 100%;
+    margin: 0 auto 10px;
+  }
 
   aside {
     font-size: 0.8rem;
