@@ -12,8 +12,8 @@ COPY ./.docker/gallery/entrypoint.sh entrypoint.sh
 
 RUN yarn prisma generate
 
-RUN mkdir -p /var/lib/gallery/photos/marked \
-  &&  mkdir -p /var/lib/gallery/photos/thumb
+RUN mkdir -p /var/lib/gallery/uploads/marked \
+  &&  mkdir -p /var/lib/gallery/uploads/thumb
 
 EXPOSE 3000
 
