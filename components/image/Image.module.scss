@@ -1,0 +1,15 @@
+.imgContainer {
+  position: relative;
+
+  .loadingIndicator {
+    font-size: 1.1rem;
+    position: absolute;
+    top: 10px;
+    text-align: center;
+    width: 100%;
+  }
+
+  img[src^="/_next/image"] {
+    z-index: 1;
+  }
+}
