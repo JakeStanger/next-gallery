@@ -2,7 +2,5 @@
 **/uploads
 **/.git
 **/.idea
-**/.next
 **/prisma/migrations
 **/.docker
-!.docker/gallery/entrypoint.sh

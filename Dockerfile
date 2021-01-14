@@ -8,7 +8,7 @@ COPY ./yarn.lock yarn.lock
 RUN yarn install --frozen-lockfile
 COPY . .
 
-COPY ./.docker/gallery/entrypoint.sh entrypoint.sh
+RUN chown -R node:node .
 
 RUN yarn prisma generate
 
@@ -19,4 +19,4 @@ EXPOSE 3000
 
 USER node
 
-ENTRYPOINT ["sh", "entrypoint.sh"]
+ENTRYPOINT ["npm", "run", "start"]
