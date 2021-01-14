@@ -33,9 +33,25 @@ function useResizeListener() {
 
 const Gallery: React.FC<IGalleryProps> = ({ imagesAndGroups }) => {
   const [width, imageSize] = useResizeListener();
+  const [loaded, setLoaded] = useState(false);
+
+  const onLoad = useCallback(() => {
+    if(!loaded) {
+      setLoaded(true);
+
+      if(location.hash) {
+        document.querySelector(location.hash)?.scrollIntoView();
+      }
+    }
+
+  }, [loaded]);
 
   return (
-    <Masonry className={styles.masonry} style={{ width }}>
+    <Masonry
+      className={styles.masonry}
+      style={{ width }}
+      onLayoutComplete={onLoad}
+    >
       {imagesAndGroups.map((imageOrGroup) => {
         return isGroup(imageOrGroup) ? (
           <GroupCard

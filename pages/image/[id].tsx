@@ -90,7 +90,7 @@ const Photo: React.FC<IProps> = ({
       description={image.description || undefined}
       imageUrl={getImageUrl(image.id, false)}
     >
-      <Link href={image.groupId ? `/group/${image.groupId}` : '/'}>
+      <Link href={(image.groupId ? `/group/${image.groupId}` : '/') + `#card-${image.id}`}>
         <a>Back to {image.groupId ? 'group' : 'gallery'}</a>
       </Link>
       <div className={styles.imageContainer} ref={imageContainer}>

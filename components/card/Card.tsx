@@ -28,6 +28,7 @@ const Card: React.FC<ICardProps> = ({
   return (
     <div
       className={css(styles.card, className)}
+      id={`card-${image.id}`}
       style={{
         width: width,
       }}
