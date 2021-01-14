@@ -14,18 +14,25 @@ const Image: React.FC<IImageProps> = ({ imageId, full, ...props }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-       const img = containerRef.current?.querySelector(
-          'img[src^="/_next/image"]'
-        ) as HTMLImageElement;
+      const img = containerRef.current?.querySelector(
+        'img[src^="/_next/image"]'
+      ) as HTMLImageElement;
+
+      if (img.complete) {
+        setLoading(false);
+      } else {
         img.addEventListener('load', () => {
           setLoading(false);
         });
+      }
     }, []);
 
     return (
       <div ref={containerRef} className={styles.imgContainer}>
         <NextImage {...props} src={src} loading={'eager'} />
-        {loading && <div className={styles.loadingIndicator}>Loading Image...</div>}
+        {loading && (
+          <div className={styles.loadingIndicator}>Loading Image...</div>
+        )}
       </div>
     );
   }
