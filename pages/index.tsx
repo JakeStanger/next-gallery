@@ -1,7 +1,7 @@
 import Layout from '../components/Layout';
 import { GetStaticProps } from 'next';
 import { Image, Location, Category, Tag } from '@prisma/client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { sortBy, shuffle } from 'lodash';
 import Gallery from '../components/gallery/Gallery';
 import isGroup from '../lib/utils/isGroup';
@@ -27,6 +27,15 @@ const Home: React.FC<IServerSideProps> = ({ categories }) => {
     Category & { images: (Image & { tags: Tag[]; location: Location })[] }
   >(categories[0]);
 
+  useEffect(() => {
+    const cachedCategoryId = sessionStorage.getItem('gallery.category');
+    if (cachedCategoryId) {
+      const categoryId = parseInt(cachedCategoryId);
+      const category = categories.find((c) => c.id === categoryId);
+      if (category) setSelectedCategory(category);
+    }
+  }, []);
+
   const updateCategory = useCallback(
     (
       category: Category & {
@@ -36,6 +45,7 @@ const Home: React.FC<IServerSideProps> = ({ categories }) => {
       setSelectedCategory(category);
       setQuery('');
 
+      sessionStorage.setItem('gallery.category', category.id.toString());
       scrollIntoView(containerRef.current!, {
         scrollMode: 'if-needed',
         behavior: 'smooth',
