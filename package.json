@@ -49,7 +49,8 @@
     "sass": "^1.30.0",
     "scroll-into-view-if-needed": "^2.2.26",
     "sharp": "^0.27.0",
-    "stripe": "^8.129.0"
+    "stripe": "^8.129.0",
+    "use-debounce": "^5.2.0"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^10.0.5",

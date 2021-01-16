@@ -5,6 +5,7 @@ import Masonry from 'react-masonry-component';
 import isGroup from '../../lib/utils/isGroup';
 import Card from '../card/Card';
 import GroupCard from '../card/groupCard/GroupCard';
+import { useDebouncedCallback } from 'use-debounce';
 
 function useResizeListener() {
   const getWidth = useCallback(() => {
@@ -33,24 +34,32 @@ function useResizeListener() {
 
 const Gallery: React.FC<IGalleryProps> = ({ imagesAndGroups }) => {
   const [width, imageSize] = useResizeListener();
-  const [loaded, setLoaded] = useState(false);
+
+  const clearHash = useDebouncedCallback(
+    () => {
+      history.replaceState(
+        '',
+        document.title,
+        window.location.pathname + window.location.search
+      );
+    },
+    1000,
+    { trailing: true }
+  );
 
   const onLoad = useCallback(() => {
-    if(!loaded) {
-      setLoaded(true);
-
-      if(location.hash) {
-        document.querySelector(location.hash)?.scrollIntoView();
-      }
+    if (location.hash) {
+      document.querySelector(location.hash)?.scrollIntoView();
+      clearHash.callback();
     }
-
-  }, [loaded]);
+  }, []);
 
   return (
     <Masonry
       className={styles.masonry}
       style={{ width }}
       onLayoutComplete={onLoad}
+      options={{ transitionDuration: 200 }}
     >
       {imagesAndGroups.map((imageOrGroup) => {
         return isGroup(imageOrGroup) ? (
