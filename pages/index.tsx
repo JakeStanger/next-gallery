@@ -100,7 +100,7 @@ const Home: React.FC<IServerSideProps> = ({ categories }) => {
           onChange={onQueryChange}
         />
       </section>
-      <Gallery imagesAndGroups={images}  />
+      <Gallery imagesAndGroups={images} />
       <ScrollTop />
     </Layout>
   );
@@ -166,7 +166,7 @@ export const getStaticProps: GetStaticProps = async () => {
     props: {
       categories,
     },
-    revalidate: 30
+    revalidate: 30,
   };
 };
 
