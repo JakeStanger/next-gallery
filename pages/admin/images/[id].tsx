@@ -148,7 +148,7 @@ export const getServerSideProps: GetServerSideProps<IServerSideProps> = async ({
   params,
 }) => {
   const id = parseInt(params?.id as string);
-  if (!id) {
+  if (!id || isNaN(id)) {
     return {
       notFound: true,
     };

@@ -139,8 +139,16 @@ const Photo: React.FC<IProps> = ({
 };
 
 export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
+  const id = parseInt(params?.id as string);
+
+  if(!id || isNaN(id)) {
+    return {
+      notFound: true
+    }
+  }
+
   const image = await prisma.image.findUnique({
-    where: { id: parseInt(params?.id as string) },
+    where: { id },
     include: { priceGroup: { include: { prices: true } }, location: true },
   });
 
