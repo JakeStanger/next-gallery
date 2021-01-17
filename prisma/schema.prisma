@@ -39,7 +39,7 @@ model Image {
   width       Int
   height      Int
   exposure    Float?
-  focalLength Int?
+  focalLength Float?
   aperture    Float?
   iso         Int?
   cameraModel String?
