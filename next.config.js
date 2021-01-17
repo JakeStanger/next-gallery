@@ -45,6 +45,8 @@ module.exports = withBundleAnalyzer({
     // Use browser Sentry package in browser
     if (!options.isServer) {
       config.resolve.alias['@sentry/node'] = '@sentry/browser';
+    } else {
+      require('./scripts/generate-sitemap');
     }
 
     config.plugins.push(
