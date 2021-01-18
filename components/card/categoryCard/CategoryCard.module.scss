@@ -2,8 +2,10 @@
 
 .categoryCard {
   cursor: pointer;
+  padding: 1px;
 
   &.selected {
     border: 2px solid rgba(colors.$gold, 1);
+    padding: 0;
   }
 }
