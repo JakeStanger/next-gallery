@@ -11,6 +11,7 @@ async function generateSiteMap() {
     '!pages/api',
     '!pages/admin',
     '!pages/checkout',
+    '!pages/4*',
   ]);
 
   const prisma = new PrismaClient();
@@ -38,7 +39,7 @@ async function generateSiteMap() {
       </urlset>
   `;
 
-  fs.writeFileSync('public/sitemap.xml', sitemap);
+  fs.writeFileSync('public/sitemap.xml', sitemap.trim());
   console.log('Sitemap saved to file');
 }
 
