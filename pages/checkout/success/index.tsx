@@ -33,7 +33,7 @@ const CheckoutSuccess: React.FC<IServerSideProps> = ({
   return (
     <Layout title={'Payment Successful'}>
       <Link href={'/'}>
-        <a>Back to gallery</a>
+        <a href={'/'}>Back to gallery</a>
       </Link>
       <div dangerouslySetInnerHTML={{ __html: message }} />
       {address && (
@@ -77,7 +77,7 @@ const CheckoutSuccess: React.FC<IServerSideProps> = ({
         </div>
       </section>
       <Link href={'/'}>
-        <a>Back to gallery</a>
+        <a href={'/'}>Back to gallery</a>
       </Link>
     </Layout>
   );

@@ -36,7 +36,7 @@ const Card: React.FC<ICardProps> = ({
     >
       {typeof href !== 'function' ? (
         <Link href={href ?? `/image/${image.id}`}>
-          <a>
+          <a href={href ?? `/image/${image.id}`}>
             <Image {...imageProps} />
           </a>
         </Link>

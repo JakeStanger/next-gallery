@@ -121,7 +121,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
         <div>
           Your basket is empty right now.{' '}
           <Link href={'/'}>
-            <a>Go to the gallery</a>
+            <a href={'/'}>Go to the gallery</a>
           </Link>{' '}
           to add some items, and they'll show up here.
         </div>

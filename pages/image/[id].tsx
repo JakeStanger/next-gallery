@@ -84,14 +84,16 @@ const Photo: React.FC<IProps> = ({
 
   const imageLink = useImageSrc(image.id, true);
 
+  const backHref = (image.groupId ? `/group/${image.groupId}` : '/') + `#card-${image.id}`;
+
   return (
     <Layout
       title={image.name}
       description={image.description || undefined}
       imageUrl={getImageUrl(image.id, false)}
     >
-      <Link href={(image.groupId ? `/group/${image.groupId}` : '/') + `#card-${image.id}`}>
-        <a>Back to {image.groupId ? 'group' : 'gallery'}</a>
+      <Link href={backHref}>
+        <a href={backHref}>Back to {image.groupId ? 'group' : 'gallery'}</a>
       </Link>
       <div className={styles.imageContainer} ref={imageContainer}>
         <a href={imageLink} target={'_blank'}>

@@ -5,9 +5,11 @@ import Link from 'next/link';
 
 const Admin: React.FC = () => {
   return (
-   <AdminLayout>
-     <Link href={'/admin/images'}><a>Click here to redirect</a></Link>
-   </AdminLayout>
+    <AdminLayout>
+      <Link href={'/admin/images'}>
+        <a href={'/admin/images'}>Click here to redirect</a>
+      </Link>
+    </AdminLayout>
   );
 };
 
@@ -15,9 +17,9 @@ export const getServerSideProps: GetServerSideProps<{}> = async () => {
   return {
     redirect: {
       permanent: true,
-      destination: '/admin/images'
-    }
-  }
-}
+      destination: '/admin/images',
+    },
+  };
+};
 
 export default Admin;
