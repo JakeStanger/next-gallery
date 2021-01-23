@@ -7,7 +7,7 @@ import { ImageListType } from 'react-images-uploading/dist/typings';
 import { css } from '../../../lib/utils/css';
 import getNameFromFile from '../../../lib/getNameFromFile';
 import { GetServerSideProps } from 'next';
-import { Category, PriceGroup, ImageCreateInput } from '@prisma/client';
+import { Category, PriceGroup, Prisma } from '@prisma/client';
 import prisma from '../../../lib/prisma';
 import { useRouter } from 'next/router';
 import ImageService from '../../../lib/services/image';
@@ -89,7 +89,7 @@ const UploadImage: React.FC<IServerSideProps> = ({
   };
 
   const uploadImage = useCallback(
-    async (saveData: ImageCreateInput) => {
+    async (saveData: Prisma.ImageCreateInput) => {
       setProgress(0);
       setServerMessages(undefined);
       setError(undefined);

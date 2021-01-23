@@ -1,4 +1,4 @@
-import { Category, PriceGroup, ImageUpdateInput, ImageCreateInput } from "@prisma/client";
+import { Category, PriceGroup, Prisma } from "@prisma/client";
 import FullImage from '../../../lib/types/FullImage';
 
 interface IImageFormProps {
@@ -6,7 +6,7 @@ interface IImageFormProps {
   image: Partial<FullImage>;
   categories: Category[];
   priceGroups: PriceGroup[];
-  onSave: (saveValues: ImageUpdateInput | ImageCreateInput) => Promise<void>;
+  onSave: (saveValues: Prisma.ImageUpdateInput | Prisma.ImageCreateInput) => Promise<void>;
   showExif?: boolean;
 }
 

@@ -1,4 +1,4 @@
-import { ImageUpdateInput } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import FullImage from '../../types/FullImage';
 import { cloneDeep } from 'lodash';
 
@@ -12,7 +12,7 @@ function processImageReqBody(id: number, editValues: Partial<FullImage>) {
     value ? parseFloat(value) ?? undefined : undefined;
 
   // perform pre-save transforms
-  const saveValues: ImageUpdateInput = cloneDeep(editValues) as any;
+  const saveValues: Prisma.ImageUpdateInput = cloneDeep(editValues) as any;
   saveValues.iso = ensureInt(editValues.iso);
   saveValues.exposure = ensureFloat(editValues.exposure);
   saveValues.aperture = ensureFloat(editValues.aperture);

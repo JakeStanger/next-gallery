@@ -1,8 +1,8 @@
-import { Image, ImageUpdateInput, ImageCreateInput } from '@prisma/client';
+import { Image, Prisma } from '@prisma/client';
 
 class ImageService {
   public static async createImage(
-    saveData: ImageCreateInput
+    saveData: Prisma.ImageCreateInput
   ): Promise<Error | Image> {
     const res = await fetch('/api/image', {
       method: 'POST',
@@ -19,7 +19,7 @@ class ImageService {
 
   public static async updateImage(
     id: number,
-    diff: ImageUpdateInput
+    diff: Prisma.ImageUpdateInput
   ): Promise<Error | undefined> {
     const res = await fetch(`/api/image/${id}`, {
       method: 'PATCH',

@@ -1,4 +1,4 @@
-import { PriceUpdateInput, Price, PriceGroup } from '@prisma/client';
+import { Prisma, Price, PriceGroup } from '@prisma/client';
 import { cloneDeep } from 'lodash';
 
 function processPriceReqBody(
@@ -10,9 +10,8 @@ function processPriceReqBody(
   const ensureFloat = (value: any) =>
     value ? parseFloat(value) ?? undefined : undefined;
 
-  const saveValues: PriceUpdateInput = cloneDeep(editValues) as any;
-  saveValues.costRegular = ensureFloat(editValues.costRegular);
-  saveValues.costSpecial = ensureFloat(editValues.costSpecial);
+  const saveValues: Prisma.PriceUpdateInput = cloneDeep(editValues) as any;
+  saveValues.cost = ensureFloat(editValues.cost);
   saveValues.costPostage = ensureFloat(editValues.costPostage);
 
   if (editValues.priceGroup !== undefined) {

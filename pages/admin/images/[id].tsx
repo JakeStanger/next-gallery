@@ -4,7 +4,7 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/prisma';
 import Image from '../../../components/image/Image';
-import { Category, PriceGroup, ImageUpdateInput } from '@prisma/client';
+import { Category, PriceGroup, Prisma } from '@prisma/client';
 import FullImage from '../../../lib/types/FullImage';
 import ImageForm from '../../../components/admin/imageForm/ImageForm';
 import { useRouter } from 'next/router';
@@ -37,7 +37,7 @@ const EditImage: React.FC<IServerSideProps> = ({
   const width = 360; // TODO: Base on screen size
   const height = image.height * (width / image.width);
 
-  const onSave = useCallback(async (saveValues: ImageUpdateInput) => {
+  const onSave = useCallback(async (saveValues: Prisma.ImageUpdateInput) => {
     setError(undefined);
     const error = await ImageService.updateImage(image.id, saveValues);
     if (!error) {
