@@ -77,7 +77,7 @@ const PriceGroups: React.FC<IServerSideProps> = ({
             {
               title: 'Time Taken',
               field: 'timeTaken',
-              type: 'datetime'
+              type: 'datetime',
             },
             {
               title: 'Categories',

@@ -21,7 +21,7 @@ import { getMarkdownContent } from '../../lib/utils/content';
 interface IProps {
   tableInfo: string;
   image: Image & {
-    priceGroup: PriceGroup & { prices: Price[] } | null;
+    priceGroup: (PriceGroup & { prices: Price[] }) | null;
     location: Location | null;
   };
   description: string | null;
@@ -59,7 +59,7 @@ const Photo: React.FC<IProps> = ({
   description,
   exposure,
 }) => {
-  if(!image) return <Error statusCode={404} />;
+  if (!image) return <Error statusCode={404} />;
 
   const imageContainer = useRef<HTMLDivElement>(null);
 
@@ -87,7 +87,8 @@ const Photo: React.FC<IProps> = ({
 
   const imageLink = useImageSrc(image.id, true);
 
-  const backHref = (image.groupId ? `/group/${image.groupId}` : '/') + `#card-${image.id}`;
+  const backHref =
+    (image.groupId ? `/group/${image.groupId}` : '/') + `#card-${image.id}`;
 
   return (
     <Layout
@@ -100,14 +101,14 @@ const Photo: React.FC<IProps> = ({
       </Link>
       <div className={styles.imageContainer} ref={imageContainer}>
         <a href={imageLink} target={'_blank'}>
-          <div className={styles.image} style={{...dimensions}}>
-          <ImageComponent
-            imageId={image.id}
-            full={true}
-            alt={image.name}
-            quality={90}
-            {...dimensions}
-          />
+          <div className={styles.image} style={{ ...dimensions }}>
+            <ImageComponent
+              imageId={image.id}
+              full={true}
+              alt={image.name}
+              quality={90}
+              {...dimensions}
+            />
           </div>
           <aside>Click to view full resolution</aside>
         </a>
@@ -148,10 +149,10 @@ const Photo: React.FC<IProps> = ({
 export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
   const id = parseInt(params?.id as string);
 
-  if(!id || isNaN(id)) {
+  if (!id || isNaN(id)) {
     return {
-      notFound: true
-    }
+      notFound: true,
+    };
   }
 
   const image = await prisma.image.findUnique({
@@ -187,7 +188,7 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
       description,
       exposure,
     },
-    revalidate: 15
+    revalidate: 15,
   };
 };
 
@@ -201,6 +202,5 @@ export const getStaticPaths: GetStaticPaths = async () => {
     fallback: 'blocking',
   };
 };
-
 
 export default Photo;
