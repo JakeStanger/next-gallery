@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import { GetServerSideProps } from 'next';
 import BasketService from '../../lib/services/basket';
-import IBasketItem from '../../lib/services/IBasketItem';
+import IBasketItem, {
+  IExpandedBasketItem,
+} from '../../lib/services/IBasketItem';
 import prisma from '../../lib/prisma';
 import { Image, Price, PriceGroup } from '@prisma/client';
 import { useRouter } from 'next/router';
@@ -24,17 +26,33 @@ function getBasketTotal(basket: IBasketItem[], prices: Price[]) {
   if (!basket.length) return 0;
   return basket
     .map((item) => {
-      const price = prices.find((p) => p.id === item.priceId)!;
-      return (
-        (item.special ? price.costSpecial! : price.costRegular!) * item.quantity
-      );
+      const price = prices.find((p) => p.id === item.priceId);
+      return (price?.cost || 0) * item.quantity;
     })
     .reduce((total, price) => total + price)
     .toFixed(2);
 }
 
+function getExpandedBasket(
+  basket: IBasketItem[],
+  images: Image[],
+  prices: (Price & {priceGroup: PriceGroup})[]
+): IExpandedBasketItem[] {
+  return basket.flatMap((item) => {
+    const price = prices.find((p) => p.id === item.priceId);
+    const image = images.find((im) => im.id === item.imageId);
+    if (price && image) {
+      return {
+        ...item,
+        price,
+        image,
+      };
+    } else return [];
+  });
+}
+
 const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
-  const [basket, setBasket] = useState<IBasketItem[]>([]);
+  const [basket, setBasket] = useState<IExpandedBasketItem[]>([]);
 
   const [deleteItem, setDeleteItem] = useState<IBasketItem | undefined | null>(
     undefined
@@ -45,17 +63,11 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
   const router = useRouter();
 
   // whether the basket contains an item which cannot be shipped
-  const cannotShip = !canShipBasket(
-    basket.map((i) => ({
-      ...i,
-      price: prices.find((p) => p.id === i.priceId)!,
-      image: images.find((im) => im.id === i.imageId)!,
-    }))
-  );
+  const cannotShip = !canShipBasket(basket);
 
   // load basket on hydrate
   useEffect(() => {
-    setBasket(BasketService.getBasket());
+    setBasket(getExpandedBasket(BasketService.getBasket(), images, prices));
   }, []);
 
   const onCheckout = useCallback(
@@ -86,7 +98,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
     setDeleteItem(undefined);
 
     // refresh basket
-    setBasket(BasketService.getBasket());
+    setBasket(getExpandedBasket(BasketService.getBasket(), images, prices));
   }, [basket, deleteItem]);
 
   return (

@@ -2,9 +2,9 @@
 @use 'styles/components';
 
 .priceTable {
-  @include components.table(4);
+  @include components.table(3);
 
   &.noPostage {
-    grid-template-columns: repeat(3, auto);
+    grid-template-columns: repeat(2, auto);
   }
 }

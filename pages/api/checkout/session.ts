@@ -45,15 +45,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       const basketItems: Stripe.Checkout.SessionCreateParams.LineItem[] = basket.map(
         (item) => {
-          const priceName = `${item.price.name} - ${
-            item.special
-              ? item.price.priceGroup.specialName
-              : item.price.priceGroup.regularName
-          }`;
+          const priceName = `${item.price.name}`;
 
-          const amount =
-            (item.special ? item.price.costSpecial! : item.price.costRegular) *
-            100;
+          const amount = item.price.cost * 100;
 
           return {
             quantity: item.quantity,

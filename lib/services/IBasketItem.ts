@@ -4,7 +4,6 @@ interface IBasketItem {
   imageId: number;
   priceId: number;
   quantity: number;
-  special: boolean;
 }
 
 export interface IExpandedBasketItem extends IBasketItem {

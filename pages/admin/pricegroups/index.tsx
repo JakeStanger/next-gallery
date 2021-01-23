@@ -11,24 +11,8 @@ const PriceGroups: React.FC = () => {
           allowAdd={true}
           columns={[
             { title: 'Name', field: 'name' },
-            {
-              title: 'Regular Price Name',
-              field: 'regularName',
-              tooltip: 'The type of item sold at the regular price',
-            },
-            {
-              title: 'Special Price Name',
-              field: 'specialName',
-              tooltip: 'The type of item sold at the special price',
-            },
-            { title: 'Price Type Name', field: 'priceTypeName',
-              tooltip: 'The varying factor in prices within this group'
-            },
-            {
-              title: 'Can Post Special',
-              field: 'canPostSpecial',
-              tooltip: 'Whether special items in this group can be shipped',
-              type: 'boolean'
+            { title: 'Price Type', field: 'priceTypeName',
+              tooltip: 'The varying factor in prices within this group, for example size or product'
             },
             { title: 'Prices', field: 'priceCount', editable: 'never' },
           ]}

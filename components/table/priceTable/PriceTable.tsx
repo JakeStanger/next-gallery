@@ -12,33 +12,37 @@ const Price: React.FC<{ className: string; price: number | null }> = ({
   </div>
 );
 
-const PriceTable: React.FC<IPriceTableProps> = ({ priceGroups, includePostage }) => {
+const PriceTable: React.FC<IPriceTableProps> = ({
+  priceGroups,
+  includePostage,
+  infoText,
+}) => {
   const excludePostage = includePostage === false;
 
   return (
     <div>
-      <div className={css(styles.priceTable, excludePostage && styles.noPostage)}>
+      <div
+        className={css(styles.priceTable, excludePostage && styles.noPostage)}
+      >
         {priceGroups.map((priceGroup, i) => (
           <React.Fragment key={i}>
             <div className={styles.groupName}>{priceGroup.name}</div>
+            {i === 0 && <div className={styles.fullWidth} dangerouslySetInnerHTML={{__html: infoText}} />}
             <div className={styles.header}>
               {priceGroup.priceTypeName || 'Name'}
             </div>
-            <div className={styles.header}>
-              {priceGroup.regularName || 'Regular'}
-            </div>
-            <div className={styles.header}>
-              {priceGroup.specialName || 'Special'}
-            </div>
+            <div className={styles.header}>Price</div>
+
             {!excludePostage && <div className={styles.header}>Postage</div>}
             {priceGroup.prices.map((price, i) => {
               const className = css(styles.cell, i % 2 === 1 && styles.stripe);
               return (
                 <React.Fragment key={price.id}>
                   <div className={className}>{price.name}</div>
-                  <Price className={className} price={price.costRegular} />
-                  <Price className={className} price={price.costSpecial} />
-                  {!excludePostage && <Price className={className} price={price.costPostage} />}
+                  <Price className={className} price={price.cost} />
+                  {!excludePostage && (
+                    <Price className={className} price={price.costPostage} />
+                  )}
                 </React.Fragment>
               );
             })}

@@ -121,6 +121,7 @@ export const getStaticProps: GetStaticProps = async () => {
   });
 
   let categories = await prisma.category.findMany({
+    where: { NOT: { images: { every: { id: { in: [] } } } } },
     include: {
       images: {
         where: { groupId: null },

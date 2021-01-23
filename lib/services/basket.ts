@@ -4,24 +4,16 @@ import IBasketItem from './IBasketItem';
 class BasketService {
   private static STORAGE_KEY = 'gallery.basket';
 
-  public static addToBasket(
-    image: Image,
-    price: Price,
-    quantity: number,
-    special: boolean
-  ) {
+  public static addToBasket(image: Image, price: Price, quantity: number) {
     const basket = this.getBasket();
 
     const existing = basket.find(
-      (item) =>
-        item.imageId === image.id &&
-        item.priceId === price.id &&
-        item.special === special
+      (item) => item.imageId === image.id && item.priceId === price.id
     );
     if (existing) {
       existing.quantity += quantity;
     } else {
-      basket.push({ imageId: image.id, priceId: price.id, quantity, special });
+      basket.push({ imageId: image.id, priceId: price.id, quantity });
     }
 
     this.saveBasket(basket);
@@ -29,12 +21,7 @@ class BasketService {
 
   public static removeFromBasket(item: IBasketItem) {
     const basket = this.getBasket().filter(
-      (i) =>
-        !(
-          item.imageId === i.imageId &&
-          item.priceId === i.priceId &&
-          item.special === i.special
-        )
+      (i) => !(item.imageId === i.imageId && item.priceId === i.priceId)
     );
 
     this.saveBasket(basket);
@@ -45,9 +32,20 @@ class BasketService {
   }
 
   public static getBasket(): IBasketItem[] {
-    const basket = localStorage.getItem(this.STORAGE_KEY);
-    if (basket) {
-      return JSON.parse(basket) as IBasketItem[];
+    const basketString = localStorage.getItem(this.STORAGE_KEY);
+    if (basketString) {
+      const basket = JSON.parse(basketString) as IBasketItem[];
+
+      // filter invalid basket items
+      let filteredBasket = basket.filter(
+        (item) => (item.quantity && item.imageId && item.priceId)
+      );
+
+      if (filteredBasket.length !== basket.length) {
+        this.saveBasket(filteredBasket);
+      }
+
+      return filteredBasket;
     } else {
       return [];
     }

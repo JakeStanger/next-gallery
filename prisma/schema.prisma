@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  //  previewFeatures = ["nativeTypes"]
+  previewFeatures = ["nativeTypes"]
 }
 
 datasource db {
@@ -35,7 +35,7 @@ model Group {
 model Image {
   id          Int       @id @default(autoincrement())
   name        String    @unique
-  description String? // @db.Text // TODO: enable when Prisma supports it
+  description String?   @db.Text
   width       Int
   height      Int
   exposure    Float?
@@ -66,8 +66,7 @@ model Location {
 model Price {
   id          Int    @id @default(autoincrement())
   name        String
-  costRegular Float
-  costSpecial Float?
+  cost        Float
   costPostage Float?
 
   priceGroup   PriceGroup @relation(fields: [priceGroupId], references: [id])
@@ -78,9 +77,6 @@ model PriceGroup {
   id             Int     @id @default(autoincrement())
   name           String  @unique
   priceTypeName  String?
-  regularName    String?
-  specialName    String?
-  canPostSpecial Boolean @default(false)
 
   images Image[]
   prices Price[]
@@ -132,7 +128,7 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime? @map(name: "email_verified")
-  image         String?   // @db.Text // TODO: enable when Prisma supports it
+  image         String?   @db.Text
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   updatedAt     DateTime  @default(now()) @map(name: "updated_at")
 

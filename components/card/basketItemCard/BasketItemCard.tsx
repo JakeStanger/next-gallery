@@ -12,16 +12,10 @@ const BasketItemCard: React.FC<IBasketItemCardProps> = ({
   basketItem,
   onDelete,
 }) => {
-  const baseCost =
-    (basketItem.special ? price.costSpecial : price.costRegular) || 0;
+  const baseCost = price.cost || 0;
 
   return (
     <Card image={image} width={width}>
-      <div>
-        {basketItem.special
-          ? price.priceGroup.specialName
-          : price.priceGroup.regularName}
-      </div>
       <div>
         £{baseCost.toFixed(2)} x {basketItem.quantity} = £
         {(baseCost * basketItem.quantity).toFixed(2)}

@@ -24,14 +24,8 @@ const Prices: React.FC<IServerSideProps> = ({ priceGroups }) => {
           columns={[
             { title: 'Name', field: 'name' },
             {
-              title: 'Regular Cost',
-              field: 'costRegular',
-              type: 'currency',
-              currencySetting: { currencyCode: 'GBP' },
-            },
-            {
-              title: 'Special Cost',
-              field: 'costSpecial',
+              title: 'Cost',
+              field: 'cost',
               type: 'currency',
               currencySetting: { currencyCode: 'GBP' },
             },
