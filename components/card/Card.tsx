@@ -14,6 +14,8 @@ const Card: React.FC<ICardProps> = ({
   href,
   children,
 }) => {
+  if(!image) return null;
+
   const height = image.height * (width / image.width);
 
   const imageProps: IImageProps = {
