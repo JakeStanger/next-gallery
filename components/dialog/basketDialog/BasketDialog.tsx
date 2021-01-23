@@ -11,7 +11,7 @@ import Button from '../../button/Button';
 import Dropdown from '../../dropdown/Dropdown';
 import Checkbox from '../../checkbox/Checkbox';
 
-const BasketDialog: React.FC<IBasketDialogProps> = ({ image, ...props }) => {
+const BasketDialog: React.FC<IBasketDialogProps> = ({ image, infoText, ...props }) => {
   const router = useRouter();
 
   const prices = image.priceGroup?.prices || [];
@@ -71,17 +71,7 @@ const BasketDialog: React.FC<IBasketDialogProps> = ({ image, ...props }) => {
               }))}
             />
           </label>
-          {prices.find((price) => price.id === priceId)?.costSpecial && (
-            <div>
-              <Checkbox
-                checked={framed}
-                onChange={setFramed}
-                label={
-                  image.priceGroup?.specialName || 'Special'
-                }
-              />
-            </div>
-          )}
+          <div dangerouslySetInnerHTML={{__html: infoText}} />
           <div className={styles.subSubTitle}>
             Price: £{getPrice().toFixed(2)}
           </div>

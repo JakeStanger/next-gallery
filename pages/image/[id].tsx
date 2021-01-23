@@ -16,8 +16,10 @@ import BasketDialog from '../../components/dialog/basketDialog/BasketDialog';
 import getImageUrl from '../../lib/getImageUrl';
 import Error from 'next/error';
 import useImageSrc from '../../lib/utils/useImageSrc';
+import { getMarkdownContent } from '../../lib/utils/content';
 
 interface IProps {
+  tableInfo: string;
   image: Image & {
     priceGroup: PriceGroup & { prices: Price[] } | null;
     location: Location | null;
@@ -52,6 +54,7 @@ function getImageDimensions(image: Image, container: HTMLDivElement | null) {
 }
 
 const Photo: React.FC<IProps> = ({
+  tableInfo,
   image,
   description,
   exposure,
@@ -127,12 +130,14 @@ const Photo: React.FC<IProps> = ({
               },
             ]}
             includePostage={false}
+            infoText={tableInfo}
           />
           <TechInfoTable image={image} exposure={exposure} />
           <BasketDialog
             image={image}
             isOpen={showBasketDialog}
             onDismiss={toggleBasketDialog}
+            infoText={tableInfo}
           />
         </>
       )}
@@ -173,8 +178,11 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
         .toFraction(true)
     : null;
 
+  const tableInfo = await getMarkdownContent('pricing', 'table-info');
+
   return {
     props: {
+      tableInfo,
       image,
       description,
       exposure,

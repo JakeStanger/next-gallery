@@ -4,8 +4,13 @@
   display: grid;
   grid-template-columns: repeat($columns, auto);
 
-  .groupName {
+  .fullWidth {
     grid-column: 1/-1;
+  }
+
+  .groupName {
+    @extend .fullWidth;
+
     font-size: 1.3rem;
     padding-top: 20px;
   }
