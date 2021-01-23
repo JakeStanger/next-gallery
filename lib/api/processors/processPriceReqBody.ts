@@ -8,7 +8,7 @@ function processPriceReqBody(
   >
 ) {
   const ensureFloat = (value: any) =>
-    value ? parseFloat(value) ?? undefined : undefined;
+    !isNaN(value) ? parseFloat(value) ?? undefined : undefined;
 
   const saveValues: Prisma.PriceUpdateInput = cloneDeep(editValues) as any;
   saveValues.cost = ensureFloat(editValues.cost);

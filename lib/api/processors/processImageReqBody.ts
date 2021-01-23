@@ -7,9 +7,9 @@ function processImageReqBody(id: number, editValues: Partial<FullImage>) {
   const newImage = id === undefined;
 
   const ensureInt = (value: any) =>
-    value ? parseInt(value) ?? undefined : undefined;
+    !isNaN(value) ? parseInt(value) ?? undefined : undefined;
   const ensureFloat = (value: any) =>
-    value ? parseFloat(value) ?? undefined : undefined;
+    !isNaN(value) ? parseFloat(value) ?? undefined : undefined;
 
   // perform pre-save transforms
   const saveValues: Prisma.ImageUpdateInput = cloneDeep(editValues) as any;
