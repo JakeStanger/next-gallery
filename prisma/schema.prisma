@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["nativeTypes"]
+  // previewFeatures = ["nativeTypes"]
 }
 
 datasource db {
@@ -35,7 +35,7 @@ model Group {
 model Image {
   id          Int       @id @default(autoincrement())
   name        String    @unique
-  description String?   @db.Text
+  description String?   // @db.Text
   width       Int
   height      Int
   exposure    Float?
@@ -128,7 +128,7 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime? @map(name: "email_verified")
-  image         String?   @db.Text
+  image         String?   // @db.Text
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   updatedAt     DateTime  @default(now()) @map(name: "updated_at")
 
