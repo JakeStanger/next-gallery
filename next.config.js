@@ -80,5 +80,5 @@ module.exports = withBundleAnalyzer({
   images: {
     domains,
   },
-  assetPrefix: isProd ? NEXT_PUBLIC_CDN_URL : '',
+  assetPrefix: isProd && !process.env.VERCEL ? NEXT_PUBLIC_CDN_URL : '',
 });
