@@ -174,6 +174,7 @@ async function handleListCrud({
 
       return res.status(200).json({ data, total });
     }
+
     case 'POST':
       // TODO: better type
       try {
@@ -181,7 +182,9 @@ async function handleListCrud({
         return res.status(201).send(newItem);
       } catch (err) {
         if (err.message?.includes('name_unique')) {
-          res.status(400).send(`${an(model)} with this name already exists.`);
+          return res
+            .status(400)
+            .send(`${an(model)} with this name already exists.`);
         } else {
           res.status(500).send(err.message);
           throw err;

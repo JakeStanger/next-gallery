@@ -1,19 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File } from 'formidable';
-import readExif from '../../../../lib/api/image/readExif';
 import * as fs from 'fs';
 import prisma from '../../../../lib/prisma';
-import sharp from 'sharp';
-import {
-  generateMarked,
-  generateThumbnail,
-} from '../../../../lib/api/image/imageGenerator';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import s3 from '../../../../lib/aws';
 import { S3 } from 'aws-sdk';
-import { Image } from '@prisma/client';
 import secure from '../../../../lib/api/middleware/secure';
+import thumbnailer from 'sharp-thumbnailer';
 
 export const config = {
   api: {
@@ -22,8 +16,8 @@ export const config = {
 };
 
 export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+  if (req.method !== 'PUT') {
+    res.setHeader('Allow', 'PUT');
     return res.status(405).end('Method Not Allowed');
   }
 
@@ -49,101 +43,71 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Accel-Buffering', 'no');
 
-  res.write('Loading image metadata\n');
+  res.write('Generating images\n');
 
-
-  const image = sharp(file.path);
-  const metadata = await image.metadata().catch((err: Error) => {
-    res.status(500).send(err.message);
-    throw err;
+  const { thumbnail, marked, exifData } = await thumbnailer(file.path, {
+    marked: { overlay: path.join('content', 'overlay.png') },
+    thumbnail: true,
+    exif: true,
   });
 
-  // might crash decoding image at this point
-  if (!metadata) {
+  if (!thumbnail || !marked || !exifData) {
+    res.status(500).send('Error generating images');
     return;
   }
 
-  const { width, height, exif } = metadata;
-
-  let data: Partial<Image> = { width, height };
-
-  res.write('Loading image exif\n');
-
-  // add exif data
-  if (exif) {
-    const exifData = await readExif(file.path).catch((err) => {
-      console.error(err);
-      return res.status(500).send((err as Error).message);
-    });
-
-    if(exifData) {
-      data = {...data, ...exifData};
-    }
-  }
+  const thumbJpeg = thumbnail.clone().jpeg();
+  const markedJpeg = marked.clone().jpeg();
 
   res.write('Updating record\n');
-
   await prisma.image.update({
     where: { id },
-    data
+    data: exifData,
   });
 
-  res.write('Generating thumbnail image\n');
-  const thumbnail = await generateThumbnail(image.clone());
+  const useAws =
+    !!process.env.AWS_S3_BUCKET_NAME && process.env.NODE_ENV === 'production';
 
-  res.write('Generating watermarked image\n');
-  const marked = await generateMarked(image, width!, height!);
-
-  const useAws = !!process.env.AWS_S3_BUCKET_NAME && process.env.NODE_ENV === 'production';
   if (!useAws) {
-    res.write('Saving to disk');
-
     // ensure upload dirs exist
     mkdirp.sync(path.join(process.env.UPLOAD_DIR ?? 'uploads', 'thumb'));
     mkdirp.sync(path.join(process.env.UPLOAD_DIR ?? 'uploads', 'marked'));
 
-    await thumbnail.toFile(
-      path.join(process.env.UPLOAD_DIR ?? 'uploads', 'thumb', `${id}.webp`)
-    );
-    await marked.toFile(
-      path.join(process.env.UPLOAD_DIR ?? 'uploads', 'marked', `${id}.webp`)
-    );
+    const dir = (type: 'thumb' | 'marked', ext: string) =>
+      path.join(process.env.UPLOAD_DIR ?? 'uploads', type, `${id}.${ext}`);
+
+    res.write('Saving webp files to disk');
+    await thumbnail.toFile(dir('thumb', 'webp'));
+    await marked.toFile(dir('marked', 'webp'));
+
+    res.write('Saving jpeg files to disk');
+    await thumbJpeg.toFile(dir('thumb', 'jpeg'));
+    await markedJpeg.toFile(dir('marked', 'jpeg'));
   } else {
-    res.write('Uploading to AWS');  // TODO: stream and write progress
+    const upload = async (
+      type: 'thumb' | 'marked',
+      ext: 'webp' | 'jpeg',
+      buffer: Buffer
+    ) => {
+      const params: S3.Types.PutObjectRequest = {
+        Bucket: process.env.AWS_S3_BUCKET_NAME!,
+        Key: `${type}/${id}.${ext}`,
+        Body: buffer,
+        ACL: 'public-read',
+        ContentType: `image/${ext}`,
+        CacheControl: 'max-age=15552000', // 6 months
+      };
 
-    const thumbBuffer = await thumbnail.toBuffer();
-    const markedBuffer = await marked.toBuffer();
+      await s3.upload(params).promise();
+    };
 
-    const params = (thumb: boolean): S3.Types.PutObjectRequest => ({
-      Bucket: process.env.AWS_S3_BUCKET_NAME!,
-      Key: `${thumb ? 'thumb' : 'marked'}/${id}.webp`,
-      Body: thumb ? thumbBuffer : markedBuffer,
-      ACL: 'public-read',
-      ContentType: 'image/webp',
-      CacheControl: 'max-age=15552000' // 6 months
-    });
+    res.write('Uploading webp files to AWS');
+    await upload('thumb', 'webp', await thumbnail.toBuffer());
+    await upload('marked', 'webp', await marked.toBuffer());
 
-    // thumbnail
-    await new Promise((resolve, reject) =>
-      s3.upload(params(true), (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(data);
-      })
-    );
-
-    // marked
-    await new Promise((resolve, reject) =>
-      s3.upload(params(false), (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(data);
-      })
-    );
+    res.write('Uploading jpeg files to AWS');
+    await upload('thumb', 'jpeg', await thumbJpeg.toBuffer());
+    await upload('marked', 'jpeg', await markedJpeg.toBuffer());
   }
 
   // delete temporary file

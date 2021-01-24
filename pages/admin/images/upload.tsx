@@ -7,7 +7,7 @@ import { ImageListType } from 'react-images-uploading/dist/typings';
 import { css } from '../../../lib/utils/css';
 import getNameFromFile from '../../../lib/getNameFromFile';
 import { GetServerSideProps } from 'next';
-import { Category, PriceGroup, Prisma } from '@prisma/client';
+import { Image, Category, PriceGroup, Prisma } from '@prisma/client';
 import prisma from '../../../lib/prisma';
 import { useRouter } from 'next/router';
 import ImageService from '../../../lib/services/image';
@@ -32,7 +32,8 @@ function formatBytes(bytes: number, decimals = 1) {
 
 function uploadWithProgress(
   url: string,
-  formData: FormData,
+  formData: FormData | Blob,
+  contentType: string | undefined,
   onUploadProgress: (
     progress: ProgressEvent<XMLHttpRequestEventTarget>
   ) => void,
@@ -40,9 +41,14 @@ function uploadWithProgress(
 ) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+
     xhr.upload.addEventListener('progress', onUploadProgress);
 
-    xhr.open('POST', url);
+    xhr.open('PUT', url);
+
+    if(contentType) {
+      xhr.setRequestHeader('Content-Type', contentType);
+    }
 
     let seenBytes = 0;
     xhr.onreadystatechange = () => {
@@ -67,6 +73,36 @@ function uploadWithProgress(
 
     xhr.send(formData);
   });
+}
+
+async function getData(file: File, image: Image) {
+  const directUpload =
+    process.env
+      .NEXT_PUBLIC_DIRECT_S3_UPLOAD; /*&&
+        process.env.NODE_ENV === 'production'*/
+
+  if (directUpload) {
+    const endpoint = await fetch(
+      `/api/auth/aws-signed-url?file=${file.name}&id=${image.id}`
+    )
+      .then((r) => r.json())
+      .then((r) => r.signedURL);
+
+    return {
+      endpoint,
+      contentType: file.type,
+      body: new Blob([file], {type: file.type})
+    }
+  } else {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return {
+      endpoint: `/api/image/${image.id}/upload`,
+      contentType: undefined,
+      body: formData
+    }
+  }
 }
 
 const UploadImage: React.FC<IServerSideProps> = ({
@@ -99,17 +135,36 @@ const UploadImage: React.FC<IServerSideProps> = ({
       saveData.height = 0;
 
       const image = await ImageService.createImage(saveData);
-      if(isError(image)) {
+      if (isError(image)) {
         setError(image.message);
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', images[0].file!);
+      const file = images[0].file!;
+
+      // const directUpload =
+      //   process.env
+      //     .NEXT_PUBLIC_DIRECT_S3_UPLOAD; /*&&
+      //   process.env.NODE_ENV === 'production'*/
+      //
+      // const formData = new FormData();
+      // formData.append('file', file);
+      // formData.append('Content-Type', file.type);
+      //
+      // const uploadEndpoint = directUpload
+      //   ? await fetch(
+      //       `/api/auth/aws-signed-url?file=${file.name}&id=${image.id}&type=${file.type}`
+      //     )
+      //       .then((r) => r.json())
+      //       .then((r) => r.signedURL)
+      //   : `/api/image/${image.id}/upload`;
+
+      const { endpoint, body, contentType } = await getData(file, image);
 
       await uploadWithProgress(
-        `/api/image/${image.id}/upload`,
-        formData,
+        endpoint,
+        body,
+        contentType,
         (progress) => {
           setProgress(progress.loaded / progress.total);
         },
@@ -119,7 +174,7 @@ const UploadImage: React.FC<IServerSideProps> = ({
           await router.push(`/admin/images/${image.id}`);
         })
         .catch(async (error) => {
-          setError(error);
+          setError(error.message || error);
           await ImageService.deleteImage(image.id);
         });
     },

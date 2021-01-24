@@ -1,0 +1,16 @@
+{
+  "name": "next-gallery-lambda",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "yarn build",
+    "publish:aws": "./publish.sh"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.1",
+    "sharp-thumbnailer": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.8"
+  }
+}

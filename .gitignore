@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+lambda/node_modules
+
 /.pnp
 .pnp.js
 
@@ -10,11 +12,12 @@
 
 # next.js
 /.next/
-/out/
 
 # production
 /build
 /public/sitemap.xml
+/lambda/lib
+/lambda/function.zip
 
 # misc
 .DS_Store
