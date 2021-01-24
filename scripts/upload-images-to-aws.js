@@ -4,8 +4,13 @@ const AWS = require('aws-sdk');
 const { config } = require('dotenv');
 config();
 
-AWS.config.update({ region: process.env.AWS_REGION });
-const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+const s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  signatureVersion: 'v4',
+  region: process.env.AWS_S3_REGION,
+  accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+});
 
 const thumbDir = path.join(process.env.UPLOAD_DIR, 'thumb');
 const markedDir = path.join(process.env.UPLOAD_DIR, 'marked');

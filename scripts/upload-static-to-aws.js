@@ -4,8 +4,13 @@ const AWS = require('aws-sdk');
 const { config } = require('dotenv');
 config();
 
-AWS.config.update({ region: process.env.AWS_S3_REGION });
-const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+const s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  signatureVersion: 'v4',
+  region: process.env.AWS_S3_REGION,
+  accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+});
 
 const uploadDir = function (s3Path, bucketName) {
   function walkSync(currentDirPath, callback) {
@@ -32,7 +37,7 @@ const uploadDir = function (s3Path, bucketName) {
         : filePath.endsWith('css')
         ? 'text/css'
         : undefined,
-      CacheControl: 'max-age=15552000' // 6 months
+      CacheControl: 'max-age=15552000', // 6 months
     };
     s3.putObject(params, function (err, data) {
       if (err) {

@@ -4,8 +4,13 @@ import * as fs from 'fs';
 import thumbnailer from 'sharp-thumbnailer';
 import fetch from 'node-fetch';
 
-AWS.config.update({ region: process.env.AWS_REGION });
-const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+const s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  signatureVersion: 'v4',
+  region: process.env.AWS_S3_REGION,
+  accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+});
 
 export const handler = async (event: S3Event): Promise<any> => {
   console.log('Bucket: ', process.env.AWS_S3_BUCKET_NAME);
@@ -82,9 +87,9 @@ export const handler = async (event: S3Event): Promise<any> => {
       body: JSON.stringify(exifData),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_GALLERY_TOKEN}`
-      }
-    })
+        Authorization: `Bearer ${process.env.NEXT_GALLERY_TOKEN}`,
+      },
+    });
   });
 
   await Promise.all(processes);
