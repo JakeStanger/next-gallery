@@ -7,10 +7,8 @@ function useImageSrc(imageId: number, full?: boolean) {
 
   useEffect(() => {
     const useWebp = supportsWebp();
-    if (useWebp) {
-      setSrc(getImageUrl(imageId, full));
-    } else {
-      setSrc(`/api/image/${imageId}/${full === true ? 'full' : 'thumb'}?jpeg`);
+    if (!useWebp) {
+      setSrc(getImageUrl(imageId, full, false, true));
     }
   }, [imageId, full]);
 

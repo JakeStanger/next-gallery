@@ -1,7 +1,7 @@
 import path from 'path';
 
-function getImageUrl(id: number, full?: boolean, relative?: boolean) {
-  const relPath = path.join(full ? 'marked' : 'thumb', `${id}.webp`);
+function getImageUrl(id: number, full?: boolean, relative?: boolean, jpeg?: boolean) {
+  const relPath = path.join(full ? 'marked' : 'thumb', `${id}.${!jpeg ? 'webp' :'jpeg'}`);
 
   if (relative) {
     return relPath;

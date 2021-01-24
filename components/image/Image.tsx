@@ -8,7 +8,7 @@ const Image: React.FC<IImageProps> = ({ imageId, full, ...props }) => {
   const src = useImageSrc(imageId, full);
 
   if (!full) {
-    return <NextImage {...props} src={src} />;
+    return <NextImage {...props} src={src} unoptimized={true} />;
   } else {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(true);
