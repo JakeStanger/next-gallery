@@ -10,16 +10,26 @@ const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 const thumbDir = path.join(process.env.UPLOAD_DIR, 'thumb');
 const markedDir = path.join(process.env.UPLOAD_DIR, 'marked');
 
-const thumbs = readdirSync(thumbDir).filter((f) => f.endsWith('.webp'));
-const marked = readdirSync(markedDir).filter((f) => f.endsWith('.webp'));
+const thumbs = (existing) =>
+  readdirSync(thumbDir).filter(
+    (f) =>
+      (f.endsWith('.webp') || f.endsWith('.jpeg')) &&
+      !existing.includes(`thumb/${f}`)
+  );
+const marked = (existing) =>
+  readdirSync(markedDir).filter(
+    (f) =>
+      (f.endsWith('.webp') || f.endsWith('.jpeg')) &&
+      !existing.includes(`marked/${f}`)
+  );
 
 const params = (thumb, buffer, file) => ({
   Bucket: process.env.AWS_S3_BUCKET_NAME,
   Key: `${thumb ? 'thumb' : 'marked'}/${file}`,
   Body: buffer,
   ACL: 'public-read',
-  ContentType: 'image/webp',
-  CacheControl: 'max-age=15552000' // 6 months
+  ContentType: file.endsWith('.webp') ? 'image/webp' : 'image/jpeg',
+  CacheControl: 'max-age=15552000', // 6 months
 });
 
 async function upload(thumb, file) {
@@ -37,19 +47,41 @@ async function upload(thumb, file) {
 }
 
 (async () => {
+  const existing = async (prefix) =>
+    await new Promise((resolve, reject) =>
+      s3.listObjects(
+        { Bucket: process.env.AWS_S3_BUCKET_NAME, Prefix: prefix },
+        function (err, data) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(
+              data.Contents.filter(
+                (object) =>
+                  object.Key.startsWith('thumb') ||
+                  object.Key.startsWith('marked')
+              ).map((object) => object.Key)
+            );
+          }
+        }
+      )
+    );
+
   console.log('Uploading thumbnails...');
   let i = 1;
 
-  for (let file of thumbs) {
-    console.log(`[${i++}/${thumbs.length}] ${file}`);
+  const thumbsToUpload = thumbs(await existing('thumb'));
+  for (let file of thumbsToUpload) {
+    console.log(`[${i++}/${thumbsToUpload.length}] ${file}`);
     await upload(true, file);
   }
 
   console.log('Uploading marked...');
   i = 1;
 
-  for (let file of marked) {
-    console.log(`[${i++}/${thumbs.length}] ${file}`);
+  const markedToUpload = marked(await existing('marked'));
+  for (let file of markedToUpload) {
+    console.log(`[${i++}/${markedToUpload.length}] ${file}`);
     await upload(false, file);
   }
 })();
