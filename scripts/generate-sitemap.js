@@ -30,7 +30,7 @@ async function generateSiteMap() {
                 .replace('pages', '')
                 .replace('.tsx', '')
                 .replace('.md', '');
-              const route = path === '/index' ? '' : path;
+              const route = path.replace(/\/?index$/, '');
               const url = new URL(route, process.env.NEXTAUTH_URL);
               
               return `<url><loc>${url}</loc></url>`;
