@@ -165,7 +165,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
         </div>
         {cannotShip && (
           <div>
-            Your basket contains one or more framed prints of canvases, which we
+            Your basket contains one or more canvases, which we
             are unfortunately unable to post.
           </div>
         )}
@@ -174,7 +174,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
           text={'Post'}
           disabled={cannotShip}
         />
-        <Button onClick={() => onCheckout(false)} text={'Collect/Deliver'} />
+        <Button onClick={() => onCheckout(false)} text={'Collect'} />
       </Dialog>
     </Layout>
   );
