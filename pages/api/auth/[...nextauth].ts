@@ -1,11 +1,10 @@
-import NextAuth from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 import Providers from 'next-auth/providers';
 import Adapters from 'next-auth/adapters';
 import prisma from '../../../lib/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { InitOptions } from 'next-auth';
 
-const options: InitOptions = {
+const options: NextAuthOptions = {
   adapter: Adapters.Prisma.Adapter({ prisma }),
   providers: [
     Providers.Google({
@@ -21,7 +20,7 @@ const options: InitOptions = {
         !authorizedEmails ||
         (account.provider === 'google' &&
           profile.verified_email === true &&
-          authorizedEmails.includes(profile.email))
+          authorizedEmails.includes(profile.email as string))
       ) {
         return Promise.resolve(true);
       } else {
@@ -30,7 +29,7 @@ const options: InitOptions = {
     },
     redirect(url: string): Promise<string> {
       return Promise.resolve(url);
-    }
+    },
   },
 };
 

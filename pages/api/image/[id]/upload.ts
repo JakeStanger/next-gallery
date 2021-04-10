@@ -23,9 +23,10 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
 
   const id = parseInt(req.query.id as string);
 
-  const form = new formidable.IncomingForm();
-  form.uploadDir = '/tmp';
-  form.keepExtensions = true;
+  const form = new formidable.IncomingForm({
+    uploadDir: '/tmp',
+    keepExtensions: true,
+  });
 
   const file: File = await new Promise((resolve, reject) =>
     form.parse(req, (err, _fields, files) => {
