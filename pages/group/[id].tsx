@@ -14,7 +14,7 @@ interface IProps {
 }
 
 const Group: React.FC<IProps> = ({ group }) => {
-  if(!group) return <Error statusCode={404} />;
+  if (!group) return <Error statusCode={404} />;
 
   return (
     <Layout
@@ -36,7 +36,10 @@ export default Group;
 export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
   const group = await prisma.group.findUnique({
     where: { id: parseInt(params?.id as string) },
-    include: { images: { include: { location: true } }, primaryImage: true },
+    include: {
+      images: { include: { location: true }, orderBy: { timeTaken: 'desc' } },
+      primaryImage: true,
+    },
   });
 
   return {
