@@ -58,6 +58,7 @@ const PriceGroups: React.FC<IServerSideProps> = ({
               editable: 'never',
               render: (data) => (
                 <Image
+                  key={data.id}
                   imageId={data.id}
                   alt={data.name}
                   width={data.width}
