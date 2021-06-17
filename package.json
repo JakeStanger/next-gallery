@@ -70,7 +70,7 @@
     "@types/sharp": "^0.26.1",
     "@types/stylelint": "^9.10.1",
     "aws-lambda": "^1.0.6",
-    "babel-plugin-superjson-next": "^0.1.8",
+    "babel-plugin-superjson-next": "^0.3.0",
     "cross-env": "^7.0.3",
     "dotenv": "^8.2.0",
     "globby": "^11.0.2",
