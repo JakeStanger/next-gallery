@@ -2,6 +2,7 @@ import { GetServerSideProps } from 'next';
 import RSS from 'rss';
 import meta from '../content/meta';
 import prisma from '../lib/prisma';
+import getImageUrl from '../lib/getImageUrl';
 
 const RSSFeed = () => {};
 export default RSSFeed;
@@ -38,6 +39,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       date: image.timeTaken || new Date(0),
       categories: image.categories.map((c) => c.name),
       author: meta.artistName,
+      enclosure: {url: getImageUrl(image.id), type: 'image/webp'}
     })
   );
 
