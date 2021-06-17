@@ -12,6 +12,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { props: {} };
   }
 
+  console.log(context.req);
+
   const host = context.req.headers.host || '';
 
   const images = await prisma.image.findMany({
@@ -24,7 +26,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     description: `Latest posts - ${meta.description}`,
     image_url: meta.imageUrl,
     site_url: host,
-    feed_url: `${host}${context.resolvedUrl}`,
+    feed_url: `https://${host}${context.resolvedUrl}`,
     copyright: `Copyright ${meta.artistName} ${new Date().getFullYear()}`,
   });
 
@@ -32,7 +34,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     feed.item({
       title: image.name,
       description: image.description || '',
-      url: `${host}/image/${image.id}`,
+      url: `https://${host}/image/${image.id}`,
       date: image.timeTaken || new Date(0),
       categories: image.categories.map((c) => c.name),
       author: meta.artistName,
