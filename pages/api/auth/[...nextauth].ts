@@ -33,5 +33,7 @@ const options: NextAuthOptions = {
   },
 };
 
-export default (req: NextApiRequest, res: NextApiResponse) =>
+const auth = (req: NextApiRequest, res: NextApiResponse) =>
   NextAuth(req, res, options);
+
+export default auth;

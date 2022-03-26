@@ -1,18 +1,11 @@
-const SentryWebpackPlugin = require('@sentry/webpack-plugin');
+const { withSuperjson } = require('next-superjson');
+const { withSentryConfig } = require('@sentry/nextjs');
+
 const {
-  NEXT_PUBLIC_SENTRY_DSN: SENTRY_DSN,
-  SENTRY_ORG,
-  SENTRY_PROJECT,
-  SENTRY_AUTH_TOKEN,
   NODE_ENV,
   NEXT_PUBLIC_CDN_URL,
   ANALYZE,
 } = process.env;
-
-// Next.JS base path
-const basePath = '';
-
-process.env.SENTRY_DSN = SENTRY_DSN;
 
 const isProd = NODE_ENV === 'production';
 
@@ -23,12 +16,19 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: ANALYZE === 'true',
 });
 
+const sentryWebpackPluginOptions = {
+  silent: true, // Suppresses all logs
+};
+
 const domains =
   isProd && NEXT_PUBLIC_CDN_URL
     ? [NEXT_PUBLIC_CDN_URL.replace('https://', '')]
     : [];
 
-module.exports = withBundleAnalyzer({
+// Next.JS base path
+const basePath = '';
+
+const config = {
   basePath,
   productionBrowserSourceMaps: true,
   env: {
@@ -41,39 +41,6 @@ module.exports = withBundleAnalyzer({
       test: /\.svg$/,
       use: ['@svgr/webpack'],
     });
-
-    // Use browser Sentry package in browser
-    if (!options.isServer) {
-      config.resolve.alias['@sentry/node'] = '@sentry/browser';
-    } else {
-      require('./scripts/generate-sitemap');
-    }
-
-    config.plugins.push(
-      new options.webpack.DefinePlugin({
-        'process.env.NEXT_IS_SERVER': JSON.stringify(
-          options.isServer.toString()
-        ),
-      })
-    );
-
-    if (
-      SENTRY_DSN &&
-      SENTRY_ORG &&
-      SENTRY_PROJECT &&
-      SENTRY_AUTH_TOKEN &&
-      isProd
-    ) {
-      config.plugins.push(
-        new SentryWebpackPlugin({
-          include: '.next',
-          ignore: ['node_modules'],
-          stripPrefix: ['webpack://_N_E/'],
-          urlPrefix: `~${basePath}/_next`,
-          release: version,
-        })
-      );
-    }
 
     return config;
   },
@@ -100,4 +67,9 @@ module.exports = withBundleAnalyzer({
     domains,
   },
   // assetPrefix: isProd && !process.env.VERCEL ? NEXT_PUBLIC_CDN_URL : '',
-});
+};
+
+module.exports = withSentryConfig(
+  withBundleAnalyzer(withSuperjson()(config)),
+  sentryWebpackPluginOptions
+);

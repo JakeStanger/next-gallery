@@ -1,11 +1,12 @@
 import secure from '../../../lib/api/middleware/secure';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiHandler } from 'next';
 import aws from '../../../lib/aws';
 
-export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
+const handler: NextApiHandler = async (req, res) => {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
-    return res.status(405).end('Method Not Allowed');
+    res.status(405).end('Method Not Allowed');
+    return;
   }
 
   const fileSplit = (req.query.file as string).split('.')
@@ -28,7 +29,9 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
     });
   });
 
-  return res.json({
+  res.json({
     signedURL,
   });
-});
+}
+
+export default secure(handler);

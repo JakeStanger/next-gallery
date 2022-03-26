@@ -7,7 +7,7 @@ import getJpeg from '../../../../lib/api/image/getJpeg';
 // fixes for next.js <Image> component
 export const config = { api: { bodyParser: false, externalResolver: true } };
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const full = async (req: NextApiRequest, res: NextApiResponse) => {
   const imagePath = getImageUrl(parseInt(req.query.id as string), true, true);
   const fullPath = path.join(process.env.UPLOAD_DIR!, imagePath);
 
@@ -23,3 +23,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(404).end();
   }
 };
+
+export default full;

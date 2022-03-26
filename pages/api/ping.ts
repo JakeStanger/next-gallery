@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
-export default async (_: NextApiRequest, res: NextApiResponse) => {
+const ping = async (_: NextApiRequest, res: NextApiResponse) => {
   res.status(200).send('pong');
 };
+
+export default ping;
