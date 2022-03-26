@@ -1,7 +1,7 @@
-import GroupWithImages from '../../../lib/types/GroupWithImages';
+import ExpandedGroup from '../../../lib/types/ExpandedGroup';
 
 interface IGroupCardProps {
-  group: GroupWithImages;
+  group: ExpandedGroup;
   width: number;
 }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import styles from './BasketDialog.module.scss';
 import IBasketDialogProps from './IBasketDialogProps';
 import BasketService from '../../../lib/services/basket';
@@ -13,7 +13,7 @@ import Dropdown from '../../dropdown/Dropdown';
 const BasketDialog: React.FC<IBasketDialogProps> = ({ image, infoText, ...props }) => {
   const router = useRouter();
 
-  const prices = image.priceGroup?.prices || [];
+  const prices = useMemo(() => image.priceGroup?.prices || [], [image.priceGroup?.prices]);
 
   const [priceId, setPriceId] = useState<number>(prices[0]?.id);
   const [quantity, setQuantity] = useState(1);
@@ -31,7 +31,7 @@ const BasketDialog: React.FC<IBasketDialogProps> = ({ image, infoText, ...props 
     BasketService.addToBasket(image, price, quantity);
     setAdded(true);
     setTimeout(() => router.push('/basket'), 500);
-  }, [image, priceId, prices, quantity]);
+  }, [image, priceId, prices, quantity, router]);
 
   return (
     <Dialog {...props} title={'Add to Basket'}>

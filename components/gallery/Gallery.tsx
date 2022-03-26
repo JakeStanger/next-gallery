@@ -27,7 +27,7 @@ function useResizeListener() {
     window.addEventListener('resize', updateWidth);
 
     return () => window.removeEventListener('resize', updateWidth);
-  }, []);
+  }, [getWidth]);
 
   return width;
 }
@@ -52,7 +52,7 @@ const Gallery: React.FC<IGalleryProps> = ({ imagesAndGroups }) => {
       document.querySelector(location.hash)?.scrollIntoView();
       clearHash.callback();
     }
-  }, []);
+  }, [clearHash]);
 
   return (
     <Masonry

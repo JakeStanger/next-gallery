@@ -1,5 +1,4 @@
 import prisma from '../../../../lib/prisma';
-import FullImage from '../../../../lib/types/FullImage';
 
 export type FieldTypes =
   | 'text'
@@ -12,10 +11,10 @@ export type FieldTypes =
 
 interface IFormFieldProps {
   label: string;
-  field: keyof FullImage;
+  field: string;
   value: any;
   type: FieldTypes;
-  onChange: (data: { value: any; field: keyof FullImage }) => void;
+  onChange: (data: { value: any; field: string }) => void;
   choices?: { endpoint: keyof typeof prisma } | any[];
 }
 

@@ -1,10 +1,9 @@
-import { Image } from '@prisma/client';
-import GroupWithImages from '../types/GroupWithImages';
+import { Image, Group } from '@prisma/client';
 
 function isGroup(
-  imageOrGroup: Image | GroupWithImages
-): imageOrGroup is GroupWithImages {
-  return (imageOrGroup as GroupWithImages).primaryImageId !== undefined;
+  imageOrGroup: Image | Group
+): imageOrGroup is Group {
+  return (imageOrGroup as Group).primaryImageId !== undefined;
 }
 
 export default isGroup;

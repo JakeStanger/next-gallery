@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { css } from '../../lib/utils/css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
 
 const Branding: React.FC<{ title?: string; homeUrl?: string }> = ({
   title,
@@ -13,17 +14,19 @@ const Branding: React.FC<{ title?: string; homeUrl?: string }> = ({
 }) => {
   return (
     <Link href={homeUrl ?? '/'}>
+      <a>
       <div className={styles.branding}>
         <div className={styles.logo}>
-          <img
+          <Image
             src={'/images/logo-small_64.png'}
             alt={'logo'}
-            width={64}
-            height={64}
+            width={32}
+            height={32}
           />
         </div>
         {title && <div className={styles.title}>{title}</div>}
       </div>
+      </a>
     </Link>
   );
 };
@@ -63,7 +66,7 @@ const Navbar: React.FC<INavbarProps> = ({ links, title, homeUrl }) => {
         <div className={styles.mobileArea}>
           <Branding title={title} homeUrl={homeUrl} />
           <div className={styles.hamburger} onClick={toggleOpen}>
-            <FontAwesomeIcon icon={faBars}></FontAwesomeIcon>
+            <FontAwesomeIcon icon={faBars}/>
           </div>
         </div>
       </div>

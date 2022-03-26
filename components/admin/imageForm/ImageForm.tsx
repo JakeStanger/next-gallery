@@ -1,15 +1,15 @@
 import React, { useCallback, useReducer } from 'react';
 import styles from './ImageForm.module.scss';
 import IImageFormProps from './IImageFormProps';
-import FormField from './formField/FormField';
+import FormField from '../form/formField/FormField';
 import FullImage from '../../../lib/types/FullImage';
-import IFormFieldProps, { FieldTypes } from './formField/IFormFieldProps';
-import { Button } from '@material-ui/core';
+import IFormFieldProps, { FieldTypes } from '../form/formField/IFormFieldProps';
+import Button from '@mui/material/Button';
 import processImageReqBody from '../../../lib/api/processors/processImageReqBody';
 
 function handleChange(
   state: Partial<FullImage>,
-  change: { field: keyof FullImage; value: any } | 'clear'
+  change: { field: string; value: any } | 'clear'
 ): Partial<FullImage> {
   if (change === 'clear') {
     return {};
@@ -17,7 +17,7 @@ function handleChange(
 
   return {
     ...state,
-    [change.field]: change.value,
+    [change.field as keyof FullImage]: change.value,
   };
 }
 
@@ -37,7 +37,7 @@ const ImageForm: React.FC<IImageFormProps> = ({
     const saveValues = processImageReqBody(image.id!, editValues);
 
     await onSave(saveValues);
-  }, [image, editValues]);
+  }, [image.id, editValues, onSave]);
 
   const clearForm = useCallback(() => {
     onChange('clear');

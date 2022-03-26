@@ -44,11 +44,6 @@ export default function Layout({
         <meta name='twitter:title' content={fullTitle} />
         <meta name='twitter:description' content={desc} />
         <meta name='twitter:image' content={img} />
-
-        <link
-          href='https://fonts.googleapis.com/css?family=Raleway&display=swap'
-          rel='stylesheet'
-        />
       </Head>
       <Navbar links={navLinks} />
       <div className={css(styles.container, fullWidth && styles.fullWidth)}>

@@ -68,7 +68,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
   // load basket on hydrate
   useEffect(() => {
     setBasket(getExpandedBasket(BasketService.getBasket(), images, prices));
-  }, []);
+  }, [images, prices]);
 
   const onCheckout = useCallback(
     async (ship: boolean) => {
@@ -83,7 +83,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
 
       stripe?.redirectToCheckout({ sessionId });
     },
-    [basket]
+    [basket, images, prices]
   );
 
   const onDelete = useCallback(() => {
@@ -99,7 +99,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
 
     // refresh basket
     setBasket(getExpandedBasket(BasketService.getBasket(), images, prices));
-  }, [basket, deleteItem]);
+  }, [deleteItem, images, prices]);
 
   return (
     <Layout title={'Basket'}>
@@ -135,7 +135,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
           <Link href={'/'}>
             <a href={'/'}>Go to the gallery</a>
           </Link>{' '}
-          to add some items, and they'll show up here.
+          to add some items, and they&apos;ll show up here.
         </div>
       )}
       <Dialog

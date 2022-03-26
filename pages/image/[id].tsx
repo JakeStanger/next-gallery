@@ -59,8 +59,6 @@ const Photo: React.FC<IProps> = ({
   description,
   exposure,
 }) => {
-  if (!image) return <Error statusCode={404} />;
-
   const imageContainer = useRef<HTMLDivElement>(null);
 
   const [dimensions, setDimensions] = useState({
@@ -83,12 +81,14 @@ const Photo: React.FC<IProps> = ({
     window.addEventListener('resize', updateDimensions);
 
     return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+  }, [updateDimensions]);
 
   const imageLink = useImageSrc(image.id, true);
 
   const backHref =
     (image.groupId ? `/group/${image.groupId}` : '/') + `#card-${image.id}`;
+
+  if (!image) return <Error statusCode={404} />;
 
   return (
     <Layout
@@ -100,13 +100,13 @@ const Photo: React.FC<IProps> = ({
         <a href={backHref}>Back to {image.groupId ? 'group' : 'gallery'}</a>
       </Link>
       <div className={styles.imageContainer} ref={imageContainer}>
-        <a href={imageLink} target={'_blank'}>
+        <a href={imageLink} target={'_blank'} rel={'noreferrer'}>
           <div className={styles.image} style={{ ...dimensions }}>
             <ImageComponent
               imageId={image.id}
               full={true}
               alt={image.name}
-              quality={90}
+              quality={95}
               {...dimensions}
             />
           </div>
@@ -118,7 +118,7 @@ const Photo: React.FC<IProps> = ({
       </header>
       <div className={styles.location}>{image.location?.name}</div>
       {description && (
-        <div dangerouslySetInnerHTML={{ __html: description }}></div>
+        <div dangerouslySetInnerHTML={{ __html: description }}/>
       )}
       {image.priceGroup && (
         <>

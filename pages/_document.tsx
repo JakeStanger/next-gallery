@@ -8,6 +8,10 @@ class CustomDocument extends Document {
           {/* Global Site Tag (gtag.js) - Google Analytics */}
           {!!process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS && (
             <>
+              <link
+                href='https://fonts.googleapis.com/css?family=Raleway&display=swap'
+                rel='stylesheet'
+              />
               <script
                 async
                 src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}`}

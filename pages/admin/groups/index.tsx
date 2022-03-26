@@ -28,7 +28,7 @@ const PriceGroups: React.FC<IServerSideProps> = ({ images }) => {
               editable: 'never',
               render: (data) => (
                 // TODO: Link to admin area (probably)
-                <a href={`/image/${data.primaryImageId}`} target={'_blank'}>
+                <a href={`/image/${data.primaryImageId}`} target={'_blank'} rel={'noreferrer'}>
                   {imageLookups[data.primaryImageId]}
                 </a>
               ),
