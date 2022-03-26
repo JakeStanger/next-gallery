@@ -2,14 +2,13 @@
   position: relative;
 
   .loadingIndicator {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
+    font-weight: 900;
     position: absolute;
-    top: 30px;
+    bottom: 0px;
     text-align: center;
+    padding: 20px;
     width: 100%;
-  }
-
-  img[src^="/_next/image"] {
-    z-index: 1;
+    background-color: #fffb;
   }
 }
