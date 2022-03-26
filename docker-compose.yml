@@ -1,40 +1,17 @@
 version: '3.2'
 
 services:
-  gallery:
-    build: .
-    image: next-gallery
-    restart: unless-stopped
-    env_file:
-      - .env
+  postgres:
+    image: postgres
     environment:
-      DATABASE_URL: "mysql://gallery:password@mariadb:3306/gallery"
-      UPLOAD_DIR: /var/lib/gallery/uploads
-      NEXT_PUBLIC_SENTRY_SERVER_ROOT_DIR: /opt/gallery
-    volumes:
-      - gallery-data:/opt/gallery/.next
-      - ./uploads:/var/lib/gallery/uploads
-    links:
-      - mariadb
-    depends_on:
-      - mariadb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: gallery
     ports:
-      - 3000:3000
-
-  mariadb:
-    image: mariadb:10.5.8
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: gallery
-      MYSQL_USER: gallery
-      MYSQL_PASSWORD: password
-    volumes:
-      - ./.docker/mariadb/init:/docker-entrypoint-initdb.d
-      - mariadb-data:/var/lib/mysql
-    ports:
-      - 3306:3306
 
 volumes:
-  gallery-data:
-  mariadb-data:
+  postgres-data:
