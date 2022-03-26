@@ -117,18 +117,25 @@ async function handleListCrud({
             if (!search.multi) {
               searchQuery.push({
                 [search.field]: {
-                  [search.childField]: { contains: query },
+                  [search.childField]: { contains: query, mode: 'insensitive' },
                 },
               });
             } else {
               searchQuery.push({
                 [search.field]: {
-                  some: { [search.childField]: { contains: query } },
+                  some: {
+                    [search.childField]: {
+                      contains: query,
+                      mode: 'insensitive',
+                    },
+                  },
                 },
               });
             }
           } else {
-            searchQuery.push({ [search.field]: { contains: query } });
+            searchQuery.push({
+              [search.field]: { contains: query, mode: 'insensitive' },
+            });
           }
         });
 
