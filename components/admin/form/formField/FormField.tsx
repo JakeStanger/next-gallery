@@ -1,15 +1,15 @@
 import React, { useCallback } from 'react';
 import styles from './FormField.module.scss';
 import IFormFieldProps from './IFormFieldProps';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import AsyncChoice from './asyncChoice/AsyncChoice';
-import ListItemText from '@material-ui/core/ListItemText';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import Checkbox from '@material-ui/core/Checkbox';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import { DateTimePicker } from '@material-ui/pickers';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import DateTimePicker from '@mui/lab/DateTimePicker';
 
 const FormField: React.FC<IFormFieldProps> = (props) => {
   const { field, value, type, label, onChange, choices } = props;
@@ -133,11 +133,11 @@ const FormField: React.FC<IFormFieldProps> = (props) => {
       return (
         <DateTimePicker
           label={label}
-          inputVariant={'outlined'}
+          renderInput={(props) => <TextField variant="outlined" {...props} />}
           value={value}
           onChange={(newValue) => onChange({ value: newValue, field })}
           ampm={false}
-          format={'dd MMMM yyyy T'}
+          inputFormat={'dd MMMM yyyy T'}
         />
       );
   }

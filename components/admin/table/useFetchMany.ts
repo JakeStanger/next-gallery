@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Query, QueryResult } from 'material-table';
+import type { Query, QueryResult } from '@material-table/core';
 
 function useFetchMany<T extends Object>(endpoint: string, expands?: string[]) {
   return useCallback(

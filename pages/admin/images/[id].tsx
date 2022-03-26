@@ -8,14 +8,12 @@ import { Category, PriceGroup, Prisma } from '@prisma/client';
 import FullImage from '../../../lib/types/FullImage';
 import ImageForm from '../../../components/admin/imageForm/ImageForm';
 import { useRouter } from 'next/router';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@material-ui/core';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import ImageService from '../../../lib/services/image';
 
 interface IServerSideProps {
@@ -45,7 +43,7 @@ const EditImage: React.FC<IServerSideProps> = ({
     } else {
       setError(error.message);
     }
-  }, []);
+  }, [image.id, router]);
 
   const onDelete = useCallback(async () => {
     setShowDeleteDialog(false);
@@ -57,7 +55,7 @@ const EditImage: React.FC<IServerSideProps> = ({
     } else {
       setError(error.message);
     }
-  }, []);
+  }, [image.id, router]);
 
   const onMakePrimary = useCallback(async () => {
     setError(undefined);
@@ -67,7 +65,7 @@ const EditImage: React.FC<IServerSideProps> = ({
     } else {
       setError(error.message);
     }
-  }, []);
+  }, [image.groupId, image.id, router]);
 
   const toggleDeleteDialog = useCallback(() => {
     setShowDeleteDialog(!showDeleteDialog);

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import ITableProps from './ITableProps';
-import MaterialTable from 'material-table';
+import MaterialTable from '@material-table/core';
 import useFetchMany from './useFetchMany';
 import { omitBy } from 'lodash';
 
@@ -25,7 +25,7 @@ const Table: React.FC<ITableProps<any>> = <
         body: JSON.stringify(data),
       });
     },
-    [endpoint]
+    [endpoint, onProcessData]
   );
 
   const onRowUpdate = useCallback(
@@ -44,7 +44,7 @@ const Table: React.FC<ITableProps<any>> = <
         body: JSON.stringify(data),
       });
     },
-    [endpoint]
+    [endpoint, onProcessData]
   );
 
   const onRowDelete = useCallback(
@@ -78,7 +78,7 @@ const Table: React.FC<ITableProps<any>> = <
         onRowUpdate,
         onRowDelete,
       }}
-      onChangePage={onChangePage}
+      onPageChange={onChangePage}
     />
   );
 };
