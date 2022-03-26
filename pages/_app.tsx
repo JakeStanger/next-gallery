@@ -6,9 +6,6 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 import './nprogress.scss';
 import '@stripe/stripe-js';
 import { Provider } from 'next-auth/client';
-import { init } from '../lib/sentry';
-
-init();
 
 // progress bar events
 router.events.on('routeChangeStart', () => NProgress.start());
