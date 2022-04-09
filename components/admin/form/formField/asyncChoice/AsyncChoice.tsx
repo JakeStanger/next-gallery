@@ -1,8 +1,8 @@
 import React from 'react';
 import IAsyncChoiceProps from './IAsyncChoiceProps';
-import { Autocomplete } from '@material-ui/lab';
 import { throttle } from 'lodash';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 
@@ -26,7 +26,7 @@ const AsyncChoice: React.FC<IAsyncChoiceProps> = ({
           .then((r) => r.json())
           .then((r) => callback(r.data));
       }, 200),
-    []
+    [model]
   );
 
   React.useEffect(() => {
@@ -60,7 +60,7 @@ const AsyncChoice: React.FC<IAsyncChoiceProps> = ({
     return () => {
       active = false;
     };
-  }, [value, inputValue, fetchOptions]);
+  }, [value, inputValue, fetchOptions, type, isMulti]);
 
   return (
     <Autocomplete
@@ -91,8 +91,9 @@ const AsyncChoice: React.FC<IAsyncChoiceProps> = ({
         <TextField {...params} label={label} variant='outlined' fullWidth />
       )}
       renderOption={(option, { inputValue }) => {
-        const matches = match(option.name, inputValue);
-        const parts = parse(option.name, matches);
+        // TODO: Figure out why the typing here is wonky
+        const matches = match((option as any).name, inputValue);
+        const parts = parse((option as any).name, matches);
 
         return (
           <div>

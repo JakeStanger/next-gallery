@@ -6,15 +6,15 @@ import Card from '../Card';
 
 const CategoryCard: React.FC<ICategoryCardProps> = ({
   category,
+  thumbnail,
   isSelected,
   onSelect,
 }) => {
   const CATEGORY_WIDTH = 220;
-  const image = category.thumbnail;
 
   return (
     <Card
-      image={image}
+      image={thumbnail}
       width={CATEGORY_WIDTH}
       title={category.name}
       className={css(styles.categoryCard, isSelected && styles.selected)}

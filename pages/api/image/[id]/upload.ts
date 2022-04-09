@@ -18,7 +18,8 @@ export const config = {
 export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'PUT') {
     res.setHeader('Allow', 'PUT');
-    return res.status(405).end('Method Not Allowed');
+    res.status(405).end('Method Not Allowed');
+    return;
   }
 
   const id = parseInt(req.query.id as string);

@@ -3,7 +3,7 @@
  * based on the first letter of the string.
  *
  * This does not even attempt to interpret or handle
- * different sounds so it's going to get things wrong.
+ * different sounds, so it's going to get things wrong.
  *
  * @param string
  * @param upper

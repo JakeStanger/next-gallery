@@ -1,8 +1,8 @@
 import { Image } from '@prisma/client';
-import GroupWithImages from '../../lib/types/GroupWithImages';
+import ExpandedGroup from '../../lib/types/ExpandedGroup';
 
 interface IGalleryProps {
-  imagesAndGroups: (Image | GroupWithImages)[];
+  imagesAndGroups: (Image | ExpandedGroup)[];
 }
 
 export default IGalleryProps;

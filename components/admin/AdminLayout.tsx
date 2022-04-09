@@ -3,13 +3,13 @@ import styles from './AdminLayout.module.scss';
 import Head from 'next/head';
 import Navbar from '../navbar/Navbar';
 import adminNavLinks from '../../content/admin/navLinks';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import LuxonUtils from '@date-io/luxon';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import AdapterLuxon from '@mui/lab/AdapterLuxon';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useSession, signIn } from 'next-auth/client';
 import meta from '../../content/meta';
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: '#866d24',
@@ -36,23 +36,19 @@ const AdminLayout: React.FC = ({ children }) => {
         <title>Admin Area | {meta.siteTitle}</title>
         <link
           rel='stylesheet'
-          href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap'
-        />
-        <link
-          rel='stylesheet'
           href='https://fonts.googleapis.com/icon?family=Material+Icons'
         />
       </Head>
       <Navbar links={adminNavLinks} title={'Admin Area'} homeUrl={'/admin'} />
       <div className={styles.container}>
         <ThemeProvider theme={theme}>
-          <MuiPickersUtilsProvider utils={LuxonUtils}>
+          <LocalizationProvider dateAdapter={AdapterLuxon}>
             {(!loading && session) || process.env.NODE_ENV === 'development' ? (
               children
             ) : (
               <div>Authorizing, please wait...</div>
             )}
-          </MuiPickersUtilsProvider>
+          </LocalizationProvider>
         </ThemeProvider>
       </div>
     </div>

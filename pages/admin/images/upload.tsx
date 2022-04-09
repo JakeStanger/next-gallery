@@ -53,7 +53,7 @@ function uploadWithProgress(
     let seenBytes = 0;
     xhr.onreadystatechange = () => {
       if (xhr.readyState == 3) {
-        const newData = xhr.response.substr(seenBytes);
+        const newData = xhr.response.substring(seenBytes);
         seenBytes = xhr.responseText.length;
 
         if (xhr.status < 400) {
@@ -78,8 +78,8 @@ function uploadWithProgress(
 async function getData(file: File, image: Image) {
   const directUpload =
     process.env
-      .NEXT_PUBLIC_DIRECT_S3_UPLOAD; /*&&
-        process.env.NODE_ENV === 'production'*/
+      .NEXT_PUBLIC_DIRECT_S3_UPLOAD &&
+        process.env.NODE_ENV === 'production'
 
   if (directUpload) {
     const endpoint = await fetch(
@@ -142,23 +142,6 @@ const UploadImage: React.FC<IServerSideProps> = ({
 
       const file = images[0].file!;
 
-      // const directUpload =
-      //   process.env
-      //     .NEXT_PUBLIC_DIRECT_S3_UPLOAD; /*&&
-      //   process.env.NODE_ENV === 'production'*/
-      //
-      // const formData = new FormData();
-      // formData.append('file', file);
-      // formData.append('Content-Type', file.type);
-      //
-      // const uploadEndpoint = directUpload
-      //   ? await fetch(
-      //       `/api/auth/aws-signed-url?file=${file.name}&id=${image.id}&type=${file.type}`
-      //     )
-      //       .then((r) => r.json())
-      //       .then((r) => r.signedURL)
-      //   : `/api/image/${image.id}/upload`;
-
       const { endpoint, body, contentType } = await getData(file, image);
 
       await uploadWithProgress(
@@ -178,7 +161,7 @@ const UploadImage: React.FC<IServerSideProps> = ({
           await ImageService.deleteImage(image.id);
         });
     },
-    [images]
+    [images, router]
   );
 
   const progressPercent = Math.round(progress * 100);
@@ -201,6 +184,7 @@ const UploadImage: React.FC<IServerSideProps> = ({
                 {imageList.length ? (
                   imageList.map((image, index) => (
                     <div key={index}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={image['data_url']} alt='' width='360' />
                       <div className={styles.label}>
                         <div>{image.file?.name}</div>

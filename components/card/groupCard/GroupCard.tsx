@@ -8,7 +8,7 @@ import Card from '../Card';
 const GroupCard: React.FC<IGroupCardProps> = ({ group, width }) => {
   return (
     <Card
-      image={group.primaryImage || group.images[0]}
+      image={group.primaryImage!}
       width={width}
       title={group.name}
       href={`/group/${group.id}`}

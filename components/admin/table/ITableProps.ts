@@ -1,4 +1,4 @@
-import { Column } from 'material-table';
+import type { Column } from '@material-table/core';
 
 interface ITableProps<RowData extends Object> {
   endpoint: string;

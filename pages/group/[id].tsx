@@ -37,7 +37,7 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
   const group = await prisma.group.findUnique({
     where: { id: parseInt(params?.id as string) },
     include: {
-      images: { include: { location: true }, orderBy: { timeTaken: 'desc' } },
+      images: { orderBy: { timeTaken: 'desc' } },
       primaryImage: true,
     },
   });

@@ -1,17 +1,12 @@
-import { Category, Image, Location, Tag } from '@prisma/client';
+import ExpandedCategory from '../../../lib/types/ExpandedCategory';
+import ExpandedImage from '../../../lib/types/ExpandedImage';
 
 interface ICategoryCardProps {
-  category: Category & {
-    images: (Image & { tags: Tag[]; location: Location })[];
-    thumbnail: Image;
-  };
+  category: ExpandedCategory;
+  thumbnail: ExpandedImage;
 
   isSelected: boolean;
-  onSelect: (
-    category: Category & {
-      images: (Image & { tags: Tag[]; location: Location })[];
-    }
-  ) => void;
+  onSelect: (category: ExpandedCategory) => void;
 }
 
 export default ICategoryCardProps;

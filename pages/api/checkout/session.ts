@@ -20,7 +20,7 @@ function absoluteUrl(req: NextApiRequest, setLocalhost: string) {
   return protocol + '//' + host;
 }
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const session = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'GET': {
       const session = await stripe.checkout.sessions.retrieve(
@@ -107,3 +107,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
   }
 };
+
+export default session;

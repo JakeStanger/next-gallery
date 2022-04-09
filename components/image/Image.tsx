@@ -1,41 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import NextImage from 'next/image';
 import IImageProps from './IImageProps';
 import useImageSrc from '../../lib/utils/useImageSrc';
 import styles from './Image.module.scss';
 
 const Image: React.FC<IImageProps> = ({ imageId, full, ...props }) => {
+  const thumbSrc = useImageSrc(imageId, false);
   const src = useImageSrc(imageId, full);
 
-  if (!full) {
-    return <NextImage {...props} src={src} unoptimized={true} />;
-  } else {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
-    useEffect(() => {
-      const img = containerRef.current?.querySelector(
-        'img[src^="/_next/image"]'
-      ) as HTMLImageElement;
+  const onLoadingComplete = useCallback(() => {
+    setLoaded(true);
+  }, []);
 
-      if (img.complete) {
-        setLoading(false);
-      } else {
-        img.addEventListener('load', () => {
-          setLoading(false);
-        });
-      }
-    }, []);
-
-    return (
-      <div ref={containerRef} className={styles.imgContainer}>
-        <NextImage {...props} src={src} loading={'eager'} />
-        {loading && (
-          <div className={styles.loadingIndicator}>Loading Image...</div>
-        )}
-      </div>
-    );
-  }
+  return (
+    <div className={styles.imgContainer}>
+      <NextImage
+        {...props}
+        src={src}
+        loading={full ? 'eager' : 'lazy'}
+        placeholder={full ? 'blur' : 'empty'}
+        blurDataURL={thumbSrc}
+        onLoadingComplete={onLoadingComplete}
+        // unoptimized={true}
+      />
+      {full && !loaded && <div className={styles.loadingIndicator}>Loading image...</div>}
+    </div>
+  );
 };
 
 export default Image;

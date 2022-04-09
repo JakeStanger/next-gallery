@@ -44,5 +44,5 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
     }
   }
 
-  return await handleItemCrud(req, res, 'image');
+  await handleItemCrud(req, res, 'image');
 });
