@@ -90,13 +90,13 @@ const AsyncChoice: React.FC<IAsyncChoiceProps> = ({
       renderInput={(params) => (
         <TextField {...params} label={label} variant='outlined' fullWidth />
       )}
-      renderOption={(option, { inputValue }) => {
+      renderOption={(props, option) => {
         // TODO: Figure out why the typing here is wonky
         const matches = match((option as any).name, inputValue);
         const parts = parse((option as any).name, matches);
 
         return (
-          <div>
+          <li {...props}>
             {parts.map((part, index) => (
               <span
                 key={index}
@@ -105,7 +105,7 @@ const AsyncChoice: React.FC<IAsyncChoiceProps> = ({
                 {part.text}
               </span>
             ))}
-          </div>
+          </li>
         );
       }}
       value={value}
