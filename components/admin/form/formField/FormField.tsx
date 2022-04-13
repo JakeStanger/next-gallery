@@ -133,6 +133,7 @@ const FormField: React.FC<IFormFieldProps> = (props) => {
       return (
         <DateTimePicker
           label={label}
+          // @ts-ignore TODO: Remove once typing issues resolved
           renderInput={(props) => <TextField variant="outlined" {...props} />}
           value={value}
           onChange={(newValue) => onChange({ value: newValue, field })}
