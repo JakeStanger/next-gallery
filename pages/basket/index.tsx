@@ -158,16 +158,17 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
         onDismiss={() => setShowCheckoutDialog(false)}
         title={'Checkout'}
       >
-        <div>
+        <p>
           Collection/local delivery is available. Please contact us if you wish
           to arrange delivery; we ask that you pay a small delivery fee using
           PayPal or cash on collection.
-        </div>
+        </p>
+        <p>Please note shipping rates are UK only. Contact us for international shipping rates.</p>
         {cannotShip && (
-          <div>
+          <p>
             Your basket contains one or more canvases, which we
             are unfortunately unable to post.
-          </div>
+          </p>
         )}
         <Button
           onClick={() => onCheckout(true)}
