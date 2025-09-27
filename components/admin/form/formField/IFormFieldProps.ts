@@ -1,5 +1,3 @@
-import prisma from '../../../../lib/prisma';
-
 export type FieldTypes =
   | 'text'
   | 'textLong'
