@@ -11,7 +11,7 @@ function useFetchMany<T extends Object>(endpoint: string, expands?: string[]) {
       if (query.orderBy?.field) {
         params.append(
           '$orderBy',
-          `${query.orderBy.field} ${query.orderDirection}`
+          `${query.orderBy.field as string} ${query.orderDirection}`
         );
       }
 
@@ -24,7 +24,7 @@ function useFetchMany<T extends Object>(endpoint: string, expands?: string[]) {
         query.filters
           .filter((filter) => filter.value?.length)
           .forEach((filter) => {
-            filterStrings.push(`${filter.column.field} eq ${filter.value}`);
+            filterStrings.push(`${filter.column.field as string} eq ${filter.value}`);
           });
 
         const filterString = filterStrings.join(' and ');

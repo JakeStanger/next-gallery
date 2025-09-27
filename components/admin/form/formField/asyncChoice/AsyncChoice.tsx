@@ -22,7 +22,7 @@ const AsyncChoice: React.FC<IAsyncChoiceProps> = ({
   const fetchOptions = React.useMemo(
     () =>
       throttle((input: string, callback: (results?: any[]) => void) => {
-        fetch(`/api/${model}?$search=${input}&$top=10`)
+        fetch(`/api/${model as string}?$search=${input}&$top=10`)
           .then((r) => r.json())
           .then((r) => callback(r.data));
       }, 200),

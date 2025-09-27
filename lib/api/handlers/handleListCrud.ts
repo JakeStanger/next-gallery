@@ -161,17 +161,17 @@ async function handleListCrud({
         for (const item of data) {
           for (const aggregate of aggregates) {
             if (!aggregate.multi) {
-              item[`${aggregate.model}Count`] = await (
+              item[`${aggregate.model as string}Count`] = await (
                 prisma[aggregate.model] as any
               ).count({
-                where: { [aggregate.key ?? `${model}Id`]: item.id },
+                where: { [aggregate.key ?? `${model as string}Id`]: item.id },
               });
             } else {
-              item[`${aggregate.model}Count`] = await (
+              item[`${aggregate.model as string}Count`] = await (
                 prisma[aggregate.model] as any
               ).count({
                 where: {
-                  [aggregate.key ?? `${model}s`]: { some: { id: item.id } },
+                  [aggregate.key ?? `${model as string}s`]: { some: { id: item.id } },
                 },
               });
             }
@@ -191,7 +191,7 @@ async function handleListCrud({
         if ((err as Error).message?.includes('name_unique')) {
           return res
             .status(400)
-            .send(`${an(model)} with this name already exists.`);
+            .send(`${an(model as string)} with this name already exists.`);
         } else {
           res.status(500).send((err as Error).message);
           throw err;

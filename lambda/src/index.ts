@@ -1,36 +1,37 @@
 import { S3Event } from 'aws-lambda';
-import AWS, { S3 } from 'aws-sdk';
+import {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+} from '@aws-sdk/client-s3';
 import * as fs from 'fs';
 import thumbnailer from 'sharp-thumbnailer';
-import fetch from 'node-fetch';
+import { Readable } from 'node:stream';
 
-const s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  signatureVersion: 'v4',
-  region: process.env.AWS_S3_REGION,
-  accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
-});
+const s3 = new S3Client();
 
 export const handler = async (event: S3Event): Promise<any> => {
   console.log('Bucket: ', process.env.AWS_S3_BUCKET_NAME);
   console.log('Fetching overlay');
-  const overlay = (await s3
-    .getObject({
-      Bucket: process.env.AWS_S3_BUCKET_NAME!,
-      Key: 'overlay.png',
-    })
-    .promise()
-    .then((r) => r.Body)) as Buffer;
+
+  const stream = await s3
+    .send(
+      new GetObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME!,
+        Key: 'overlay.png',
+      })
+    )
+    .then((r) => r.Body);
+
+  let overlay: Buffer;
+  if (stream instanceof Readable) {
+    overlay = Buffer.concat(await stream.toArray());
+  } else {
+    throw new Error('Failed to get image body');
+  }
 
   const processes = event.Records.map(async (record) => {
     console.log(`Fetching image [${record.s3.object.key}]`);
-    const object = await s3
-      .getObject({
-        Bucket: record.s3.bucket.name,
-        Key: record.s3.object.key,
-      })
-      .promise();
 
     const keyParts = /^.*\/(.*)\..*$/.exec(record.s3.object.key);
     if (!keyParts || isNaN(parseInt(keyParts[1]))) {
@@ -39,8 +40,22 @@ export const handler = async (event: S3Event): Promise<any> => {
 
     const id = keyParts[1];
 
-    const tmpPath = `/tmp/${Math.random().toString(36).substr(2)}`;
-    fs.writeFileSync(tmpPath, object.Body as Buffer);
+    const tmpPath = `/tmp/${Math.random().toString(36).substring(2)}`;
+
+    const object = await s3.send(
+      new GetObjectCommand({
+        Bucket: record.s3.bucket.name,
+        Key: record.s3.object.key,
+      })
+    ).then(r => r.Body);
+
+    let objBuffer: Buffer;
+    if (object instanceof Readable) {
+      objBuffer = Buffer.concat(await object.toArray());
+      fs.writeFileSync(tmpPath, objBuffer);
+    } else {
+      throw new Error('Failed to get image body');
+    }
 
     console.log('Generating images');
     const { thumbnail, marked, exifData } = await thumbnailer(tmpPath, {
@@ -49,8 +64,16 @@ export const handler = async (event: S3Event): Promise<any> => {
       exif: true,
     });
 
-    if (!thumbnail || !marked || !exifData) {
-      throw new Error('Error generating images');
+    if (!thumbnail) {
+      throw new Error('Error generating thumbnail');
+    }
+
+    if (!marked) {
+      throw new Error('Error generating marked image');
+    }
+
+    if (!exifData) {
+      throw new Error('Error fetching exif data');
     }
 
     const thumbJpeg = thumbnail.clone().jpeg();
@@ -61,16 +84,16 @@ export const handler = async (event: S3Event): Promise<any> => {
       ext: 'webp' | 'jpeg',
       buffer: Buffer
     ) => {
-      const params: S3.Types.PutObjectRequest = {
-        Bucket: record.s3.bucket.name,
-        Key: `${type}/${id}.${ext}`,
-        Body: buffer,
-        ACL: 'public-read',
-        ContentType: `image/${ext}`,
-        CacheControl: 'max-age=15552000', // 6 months
-      };
-
-      await s3.upload(params).promise();
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: record.s3.bucket.name,
+          Key: `${type}/${id}.${ext}`,
+          Body: buffer,
+          ACL: 'public-read',
+          ContentType: `image/${ext}`,
+          CacheControl: 'max-age=15552000', // 6 months
+        })
+      );
     };
 
     console.log('Uploading webp images');

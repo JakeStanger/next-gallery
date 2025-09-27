@@ -17,7 +17,7 @@ export default function App(props: AppProps) {
   const err = (props as any).err;
 
   return (
-    <Provider session={pageProps.session}>
+    <Provider session={(pageProps as any).session}>
       <Component {...pageProps} err={err} />
     </Provider>
   );

@@ -7,6 +7,7 @@ import mkdirp from 'mkdirp';
 import s3 from '../../../../lib/aws';
 import { S3 } from 'aws-sdk';
 import secure from '../../../../lib/api/middleware/secure';
+// @ts-ignore
 import thumbnailer from 'sharp-thumbnailer';
 
 export const config = {

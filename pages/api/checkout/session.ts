@@ -24,7 +24,7 @@ const session = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'GET': {
       const session = await stripe.checkout.sessions.retrieve(
-        req.query.session_id[0]
+        req.query.session_id![0]
       );
       if (session) {
         const customer = await stripe.customers.retrieve(

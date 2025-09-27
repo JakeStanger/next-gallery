@@ -4,7 +4,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import Layout from '../../components/Layout';
 import Gallery from '../../components/gallery/Gallery';
 import Link from 'next/link';
-import prisma from '../../lib/prisma';
+import prisma from '../../lib/client/prisma';
 import GroupWithImages from '../../lib/types/GroupWithImages';
 import getImageUrl from '../../lib/getImageUrl';
 import Error from 'next/error';
@@ -20,7 +20,7 @@ const Group: React.FC<IProps> = ({ group }) => {
     <Layout
       title={group.name}
       fullWidth
-      imageUrl={getImageUrl((group.primaryImage ?? group.images[0]).id)}
+      imageUrl={getImageUrl((group.primaryImage ?? group.images[0])?.id)}
     >
       <header className={styles.header}>
         <Link href={'/'}>Back to gallery</Link>

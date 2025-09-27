@@ -9,13 +9,15 @@ export type FieldTypes =
   | 'float'
   | 'datetime';
 
+export type Endpoint = 'location' | 'group' | 'tag';
+
 interface IFormFieldProps {
   label: string;
   field: string;
   value: any;
   type: FieldTypes;
   onChange: (data: { value: any; field: string }) => void;
-  choices?: { endpoint: keyof typeof prisma } | any[];
+  choices?: { endpoint: Endpoint } | any[];
 }
 
 export default IFormFieldProps;

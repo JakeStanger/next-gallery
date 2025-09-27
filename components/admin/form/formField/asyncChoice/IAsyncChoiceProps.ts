@@ -1,8 +1,7 @@
-import prisma from '../../../../../lib/prisma';
-import IFormFieldProps from '../IFormFieldProps';
+import IFormFieldProps, { Endpoint } from '../IFormFieldProps';
 
 interface IAsyncChoiceProps extends IFormFieldProps {
-  model: keyof typeof prisma;
+  model: Endpoint;
 }
 
 export default IAsyncChoiceProps;
