@@ -7,7 +7,7 @@ interface FullImage extends Image {
   timeTaken: Date;
   iso: number;
   exposure: number;
-  aperature: number;
+  aperture: number;
   focalLength: number;
   cameraModel: string;
   group: Group | null;
