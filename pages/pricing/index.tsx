@@ -3,7 +3,7 @@ import Layout from '../../components/Layout';
 import { GetStaticProps } from 'next';
 import { getMarkdownContent } from '../../lib/utils/content';
 import PriceTable from '../../components/table/priceTable/PriceTable';
-import prisma from '../../lib/prisma';
+import prisma from '../../lib/client/prisma';
 import { Price, PriceGroup } from '@prisma/client';
 
 interface IProps {

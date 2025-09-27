@@ -2,7 +2,7 @@ import React from 'react';
 import AdminLayout from '../../../components/admin/AdminLayout';
 import Table from '../../../components/admin/table/Table';
 import { GetServerSideProps } from 'next';
-import prisma from '../../../lib/prisma';
+import prisma from '../../../lib/client/prisma';
 import { PriceGroup } from '@prisma/client';
 import processPriceReqBody from '../../../lib/api/processors/processPriceReqBody';
 

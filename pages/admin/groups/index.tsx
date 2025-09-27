@@ -2,7 +2,7 @@ import React from 'react';
 import AdminLayout from '../../../components/admin/AdminLayout';
 import Table from '../../../components/admin/table/Table';
 import { GetServerSideProps } from 'next';
-import prisma from '../../../lib/prisma';
+import prisma from '../../../lib/client/prisma';
 import { Image } from '@prisma/client';
 
 interface IServerSideProps {

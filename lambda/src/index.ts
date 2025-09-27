@@ -5,6 +5,7 @@ import {
   PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import * as fs from 'fs';
+// @ts-ignore
 import thumbnailer from 'sharp-thumbnailer';
 import { Readable } from 'node:stream';
 

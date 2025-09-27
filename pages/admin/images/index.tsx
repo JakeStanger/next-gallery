@@ -3,7 +3,7 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import Table from '../../../components/admin/table/Table';
 import Image from '../../../components/image/Image';
 import { GetServerSideProps } from 'next';
-import prisma from '../../../lib/prisma';
+import prisma from '../../../lib/client/prisma';
 import { Category, Group, PriceGroup } from '@prisma/client';
 import Link from 'next/link';
 import Button from '@mui/material/Button';

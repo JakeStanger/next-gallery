@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../prisma';
+import prisma from '../../client/prisma';
 
 async function handleItemCrud(
   req: NextApiRequest,

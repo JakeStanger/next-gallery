@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import styles from './EditForm.module.scss';
 import AdminLayout from '../../../components/admin/AdminLayout';
 import { GetServerSideProps } from 'next';
-import prisma from '../../../lib/prisma';
+import prisma from '../../../lib/client/prisma';
 import Image from '../../../components/image/Image';
 import { Category, PriceGroup, Prisma } from '@prisma/client';
 import FullImage from '../../../lib/types/FullImage';

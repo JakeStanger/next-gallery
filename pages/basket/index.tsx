@@ -5,7 +5,7 @@ import BasketService from '../../lib/services/basket';
 import IBasketItem, {
   IExpandedBasketItem,
 } from '../../lib/services/IBasketItem';
-import prisma from '../../lib/prisma';
+import prisma from '../../lib/client/prisma';
 import { Image, Price, PriceGroup } from '@prisma/client';
 import { useRouter } from 'next/router';
 import Button from '../../components/button/Button';

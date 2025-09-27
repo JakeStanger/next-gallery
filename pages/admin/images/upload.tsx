@@ -8,7 +8,7 @@ import { css } from '../../../lib/utils/css';
 import getNameFromFile from '../../../lib/getNameFromFile';
 import { GetServerSideProps } from 'next';
 import { Image, Category, PriceGroup, Prisma } from '@prisma/client';
-import prisma from '../../../lib/prisma';
+import prisma from '../../../lib/client/prisma';
 import { useRouter } from 'next/router';
 import ImageService from '../../../lib/services/image';
 import isError from '../../../lib/utils/isError';

@@ -9,7 +9,7 @@ import PriceTable from '../../components/table/priceTable/PriceTable';
 import Fraction from 'fraction.js';
 import TechInfoTable from '../../components/table/techInfoTable/TechInfoTable';
 import Link from 'next/link';
-import prisma from '../../lib/prisma';
+import prisma from '../../lib/client/prisma';
 import { Image, Location, Price, PriceGroup } from '@prisma/client';
 import Button from '../../components/button/Button';
 import BasketDialog from '../../components/dialog/basketDialog/BasketDialog';

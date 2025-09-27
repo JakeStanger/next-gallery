@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File } from 'formidable';
 import * as fs from 'fs';
-import prisma from '../../../../lib/prisma';
+import prisma from '../../../../lib/client/prisma';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import s3 from '../../../../lib/aws';

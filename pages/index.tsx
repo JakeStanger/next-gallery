@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { sortBy, shuffle } from 'lodash';
 import Gallery from '../components/gallery/Gallery';
 import isGroup from '../lib/utils/isGroup';
-import prisma from '../lib/prisma';
+import prisma from '../lib/client/prisma';
 import CategoryCard from '../components/card/categoryCard/CategoryCard';
 import styles from './index.module.scss';
 import scrollIntoView from 'scroll-into-view-if-needed';
