@@ -9,7 +9,8 @@
     "lint": "next lint",
     "clean": "rm -rf .next",
     "publish:aws": "node scripts/upload-static-to-aws.js",
-    "analyze": "cross-env ANALYZE=true next build"
+    "analyze": "cross-env ANALYZE=true next build",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@emotion/react": "^11.8.2",

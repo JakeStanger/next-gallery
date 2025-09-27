@@ -3,6 +3,8 @@ import { Category, Group, Image, Location, PriceGroup, Tag } from '@prisma/clien
 interface FullImage extends Image {
   id: number;
   name: string;
+  width: number;
+  height: number;
   description: string | null;
   timeTaken: Date | null;
   iso: number | null;
