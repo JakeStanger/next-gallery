@@ -4,6 +4,12 @@ interface FullImage extends Image {
   id: number;
   name: string;
   description: string;
+  timeTaken: Date;
+  iso: number;
+  exposure: number;
+  aperature: number;
+  focalLength: number;
+  cameraModel: string;
   group: Group | null;
   categories: Category[];
   priceGroup: PriceGroup | null;
