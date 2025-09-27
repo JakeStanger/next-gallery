@@ -9,11 +9,12 @@ import { range } from 'lodash';
 import { useRouter } from 'next/router';
 import Button from '../../button/Button';
 import Dropdown from '../../dropdown/Dropdown';
+import { Price } from '@prisma/client';
 
 const BasketDialog: React.FC<IBasketDialogProps> = ({ image, infoText, ...props }) => {
   const router = useRouter();
 
-  const prices = useMemo(() => image.priceGroup?.prices || [], [image.priceGroup?.prices]);
+  const prices: Price[] = useMemo(() => image.priceGroup?.prices || [] as Price[], [image.priceGroup?.prices]);
 
   const [priceId, setPriceId] = useState<number>(prices[0]?.id);
   const [quantity, setQuantity] = useState(1);

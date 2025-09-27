@@ -3,13 +3,13 @@ import { Category, Group, Image, Location, PriceGroup, Tag } from '@prisma/clien
 interface FullImage extends Image {
   id: number;
   name: string;
-  description: string;
-  timeTaken: Date;
-  iso: number;
-  exposure: number;
-  aperture: number;
-  focalLength: number;
-  cameraModel: string;
+  description: string | null;
+  timeTaken: Date | null;
+  iso: number | null;
+  exposure: number | null;
+  aperture: number | null;
+  focalLength: number | null;
+  cameraModel: string | null;
   group: Group | null;
   categories: Category[];
   priceGroup: PriceGroup | null;
