@@ -6,7 +6,7 @@ import { getMarkdownContent } from '../../lib/utils/content';
 import { DateTime } from 'luxon';
 import { css } from '../../lib/utils/css';
 import prisma from '../../lib/client/prisma';
-import type { Event } from '../../lib/gen/client';
+import type { Event } from '@prisma/client';
 import { serializeProps } from '../../lib/utils/superjsonProps';
 
 interface IProps {

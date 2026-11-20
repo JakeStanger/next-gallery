@@ -7,7 +7,7 @@ import { ImageListType } from 'react-images-uploading/dist/typings';
 import { css } from '../../../lib/utils/css';
 import getNameFromFile from '../../../lib/getNameFromFile';
 import { GetServerSideProps } from 'next';
-import type { Image, Category, PriceGroup, Prisma } from '../../../lib/gen/client';
+import type { Image, Category, PriceGroup, Prisma } from '@prisma/client';
 import prisma from '../../../lib/client/prisma';
 import { useRouter } from 'next/router';
 import ImageService from '../../../lib/services/image';

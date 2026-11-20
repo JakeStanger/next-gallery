@@ -6,7 +6,7 @@ import IBasketItem, {
   IExpandedBasketItem,
 } from '../../lib/services/IBasketItem';
 import prisma from '../../lib/client/prisma';
-import type { Image, Price, PriceGroup } from '../../lib/gen/client';
+import type { Image, Price, PriceGroup } from '@prisma/client';
 import { useRouter } from 'next/router';
 import Button from '../../components/button/Button';
 import styles from './index.module.scss';

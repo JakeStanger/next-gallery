@@ -1,4 +1,4 @@
-import type { Category, Group, Image } from '../gen/client';
+import type { Category, Group, Image } from '@prisma/client';
 
 type ExpandedGroup = Group & {
   images: { categories: Category[]; id: number }[];

@@ -1,7 +1,9 @@
+// `prisma-client-js` emits plain JS into node_modules/.prisma/client with
+// conditional exports (node / workerd). The newer TS `prisma-client`
+// generator is compiled into the app bundle instead, which Cloudflare's
+// OpenNext adapter cannot currently bundle (WASM query compiler).
 generator client {
-  provider = "prisma-client"
-  runtime  = "nodejs"
-  output   = "../lib/gen"
+  provider = "prisma-client-js"
 }
 
 // Connection URL is configured in prisma.config.ts (migrations)

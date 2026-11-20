@@ -1,4 +1,4 @@
-import type { Group, Image } from '../gen/client';
+import type { Group, Image } from '@prisma/client';
 
 interface GroupWithImages extends Group {
   images: Image[];

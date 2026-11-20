@@ -35,8 +35,6 @@ yarn-error.log*
 
 *.load
 
-# generated prisma client
-/lib/gen
 
 # typescript
 *.tsbuildinfo

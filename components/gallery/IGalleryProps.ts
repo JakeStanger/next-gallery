@@ -1,4 +1,4 @@
-import type { Image } from '../../lib/gen/client';
+import type { Image } from '@prisma/client';
 import ExpandedGroup from '../../lib/types/ExpandedGroup';
 
 interface IGalleryProps {

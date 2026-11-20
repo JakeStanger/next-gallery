@@ -1,4 +1,4 @@
-import type { Image } from '../../lib/gen/client';
+import type { Image } from '@prisma/client';
 import type { MouseEventHandler, ReactNode } from 'react';
 
 interface ICardProps {

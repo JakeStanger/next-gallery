@@ -3,7 +3,7 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import Table from '../../../components/admin/table/Table';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
-import type { PriceGroup } from '../../../lib/gen/client';
+import type { PriceGroup } from '@prisma/client';
 import processPriceReqBody from '../../../lib/api/processors/processPriceReqBody';
 import { serializeProps } from '../../../lib/utils/superjsonProps';
 

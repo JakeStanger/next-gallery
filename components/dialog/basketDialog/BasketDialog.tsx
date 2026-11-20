@@ -9,7 +9,7 @@ import { range } from 'lodash';
 import { useRouter } from 'next/router';
 import Button from '../../button/Button';
 import Dropdown from '../../dropdown/Dropdown';
-import type { Price } from '../../../lib/gen/client';
+import type { Price } from '@prisma/client';
 
 const BasketDialog: React.FC<IBasketDialogProps> = ({ image, infoText, ...props }) => {
   const router = useRouter();

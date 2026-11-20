@@ -1,4 +1,4 @@
-import type { Category, Group, Image, Location, PriceGroup, Tag } from '../gen/client';
+import type { Category, Group, Image, Location, PriceGroup, Tag } from '@prisma/client';
 
 interface FullImage extends Image {
   group: Group | null;
