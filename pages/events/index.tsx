@@ -14,6 +14,8 @@ interface IProps {
   events: Event[];
 }
 
+const EVENT_TIMEZONE = 'Europe/London';
+
 const Interval: React.FC<{
   className: string;
   start: Date;
@@ -22,12 +24,15 @@ const Interval: React.FC<{
   const FORMAT_LONG = 'ccc dd LLL HH:mm';
   const FORMAT_SHORT = 'HH:mm';
 
-  const startDate = DateTime.fromJSDate(start);
-  const endDate = DateTime.fromJSDate(end);
+  // Format in UK time explicitly so server (UTC) and browser render the same
+  // times.
+  const startDate = DateTime.fromJSDate(start, { zone: EVENT_TIMEZONE });
+  const endDate = DateTime.fromJSDate(end, { zone: EVENT_TIMEZONE });
 
   const startFormatted = startDate.toFormat(FORMAT_LONG);
   const endFormatted = endDate.toFormat(
-    startDate.day === endDate.day ? FORMAT_SHORT : FORMAT_LONG
+    // compare the full date, not just the day of the month
+    startDate.hasSame(endDate, 'day') ? FORMAT_SHORT : FORMAT_LONG
   );
 
   return (

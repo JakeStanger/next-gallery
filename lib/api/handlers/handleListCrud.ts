@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../client/prisma';
 import an from '../../utils/an';
+import { isPrismaError, PRISMA_UNIQUE_CONSTRAINT } from '../prismaErrors';
 
 interface IAggregate {
   model: keyof typeof prisma;
@@ -188,7 +189,8 @@ async function handleListCrud({
         const newItem = await (prisma[model] as any).create({ data: req.body });
         return res.status(201).send(newItem);
       } catch (err) {
-        if ((err as Error).message?.includes('name_unique')) {
+        // duplicate name (unique constraint)
+        if (isPrismaError(err, PRISMA_UNIQUE_CONSTRAINT)) {
           return res
             .status(400)
             .send(`${an(model as string)} with this name already exists.`);

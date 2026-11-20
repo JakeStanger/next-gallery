@@ -113,20 +113,24 @@ const Home: NextPage<IServerSideProps> = ({ categories, images, groups }) => {
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  const groups = await prisma.group.findMany({
-    include: {
-      primaryImage: true,
-      images: { select: { id: true, categories: true } },
-    },
-    // where not empty
-    where: { NOT: { images: { every: { id: { in: [] } } } } },
-  });
+  // Only list processed images (dimensions are set by the image processor);
+  // a group is shown through its primary image.
+  const groups = (
+    await prisma.group.findMany({
+      include: {
+        primaryImage: true,
+        images: { select: { id: true, categories: true } },
+      },
+      // where not empty
+      where: { NOT: { images: { every: { id: { in: [] } } } } },
+    })
+  ).filter((group) => !group.primaryImage || group.primaryImage.width > 0);
 
   const groupMap = new Map();
   groups.forEach((group) => groupMap.set(group.id, group));
 
   const images = await prisma.image.findMany({
-    where: { groupId: null },
+    where: { groupId: null, width: { gt: 0 } },
     include: { location: true, tags: true, categories: true },
   });
 
@@ -167,13 +171,28 @@ export const getStaticProps: GetStaticProps = async () => {
             )
           );
 
-    // find random image within right aspect ratio bound
-    category.thumbnail = shuffle(
-      categoryImages.filter(
-        (image) =>
-          image.width / image.height > 1 && image.width / image.height < 1.5
-      )
-    )[0].id;
+    // Pick a random thumbnail, preferring landscape images within the right
+    // aspect ratio, falling back to any image in the category.
+    const candidates = [
+      ...categoryImages,
+      ...categoryGroups.flatMap((group) =>
+        group.primaryImage ? [group.primaryImage] : []
+      ),
+    ].filter((image) => image.width > 0 && image.height > 0);
+
+    const thumbnail =
+      shuffle(
+        candidates.filter(
+          (image) =>
+            image.width / image.height > 1 && image.width / image.height < 1.5
+        )
+      )[0] ?? shuffle(candidates)[0];
+
+    if (thumbnail) {
+      category.thumbnail = thumbnail.id;
+      // group cover images aren't in the map of ungrouped images
+      if (!imageMap.has(thumbnail.id)) imageMap.set(thumbnail.id, thumbnail);
+    }
 
     // sort images & groups together by timestamp
     // groups use their primary image timestamp

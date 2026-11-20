@@ -47,6 +47,11 @@ const Image: React.FC<IImageProps> = ({
         }
       : {};
 
+  // Dimensions are set by the image processor once an upload is processed
+  if (!width || !props.height) {
+    return <div className={styles.processing}>Processing image…</div>;
+  }
+
   return (
     <div className={styles.imgContainer}>
       <NextImage

@@ -2,6 +2,12 @@ import type { Prisma } from '@prisma/client';
 import FullImage from '../../types/FullImage';
 import { cloneDeep } from 'lodash';
 
+/** Parses a relation id from a form/table value; null, '' and 'null' mean "none" */
+function parseRelationId(value: unknown): number | undefined {
+  const id = parseInt(String(value));
+  return isNaN(id) ? undefined : id;
+}
+
 // TODO: Type editValues
 function processImageReqBody(id: number, editValues: Partial<FullImage>) {
   const newImage = id === undefined;
@@ -16,7 +22,8 @@ function processImageReqBody(id: number, editValues: Partial<FullImage>) {
   saveValues.iso = ensureInt(editValues.iso);
   saveValues.exposure = ensureFloat(editValues.exposure);
   saveValues.aperture = ensureFloat(editValues.aperture);
-  saveValues.focalLength = ensureInt(editValues.focalLength);
+  // focal length is a Float column (e.g. 18.5mm)
+  saveValues.focalLength = ensureFloat(editValues.focalLength);
 
   if (editValues.categories) {
     saveValues.categories = {
@@ -39,13 +46,15 @@ function processImageReqBody(id: number, editValues: Partial<FullImage>) {
   }
 
   if (editValues.priceGroup !== undefined) {
-    saveValues.priceGroup = {
-      connect: { id: editValues.priceGroup?.id },
-    };
-  } else if (!!editValues.priceGroupId) {
-    saveValues.priceGroup = {
-      connect: { id: parseInt(editValues.priceGroupId.toString()) },
-    };
+    saveValues.priceGroup = editValues.priceGroup
+      ? { connect: { id: editValues.priceGroup.id } }
+      : { disconnect: true };
+  } else if (editValues.priceGroupId !== undefined) {
+    // the admin table's "No Price Group" option sends null/'null'
+    const priceGroupId = parseRelationId(editValues.priceGroupId);
+    saveValues.priceGroup = priceGroupId
+      ? { connect: { id: priceGroupId } }
+      : { disconnect: true };
     delete (saveValues as any).priceGroupId;
   }
 
@@ -63,12 +72,11 @@ function processImageReqBody(id: number, editValues: Partial<FullImage>) {
     } else {
       saveValues.group = { disconnect: true };
     }
-  } else if (!!editValues.groupId) {
-    saveValues.group = {
-      connect: {
-        id: parseInt(editValues.groupId.toString())
-      }
-    }
+  } else if (editValues.groupId !== undefined) {
+    const groupId = parseRelationId(editValues.groupId);
+    saveValues.group = groupId
+      ? { connect: { id: groupId } }
+      : { disconnect: true };
 
     delete (saveValues as any).groupId;
   }
