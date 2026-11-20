@@ -19,14 +19,6 @@ model Category {
   images Image[]
 }
 
-model Event {
-  id        Int      @id @default(autoincrement())
-  name      String
-  location  String?
-  startTime DateTime
-  endTime   DateTime
-}
-
 model Group {
   id   Int    @id @default(autoincrement())
   name String @unique

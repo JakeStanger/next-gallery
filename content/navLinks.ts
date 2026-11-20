@@ -14,10 +14,6 @@ const navLinks: ILink[] = [
     href: '/pricing'
   },
   {
-    label: 'Events',
-    href: '/events'
-  },
-  {
     label: 'Facebook',
     href: 'https://www.facebook.com/RogerStangerPhotography'
   },
