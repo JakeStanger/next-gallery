@@ -29,8 +29,27 @@
       // ISR / incremental cache storage
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "next-gallery-opennext-cache"
+    },
+    {
+      // Public bucket served at NEXT_PUBLIC_CDN_URL: thumb/<id>.webp, marked/<id>.webp
+      "binding": "IMAGES_BUCKET",
+      "bucket_name": "next-gallery-images"
+    },
+    {
+      // Private bucket for original uploads: raw/<id>.<ext>
+      "binding": "ORIGINALS_BUCKET",
+      "bucket_name": "next-gallery-originals"
     }
   ],
+  "queues": {
+    "producers": [
+      {
+        // Consumed by workers/image-processor
+        "binding": "IMAGE_QUEUE",
+        "queue": "image-processing"
+      }
+    ]
+  },
   "durable_objects": {
     "bindings": [
       {

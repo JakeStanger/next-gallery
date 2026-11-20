@@ -35,8 +35,9 @@ npm run dev
 | Script               | Description                                                                 |
 |----------------------|-----------------------------------------------------------------------------|
 | `npm run dev`        | Next.js dev server, with Cloudflare bindings available via `getCloudflareContext` |
-| `npm run preview`    | Builds the Worker and runs it locally in `workerd` (closest to production) |
+| `npm run preview`    | Builds the app and runs it with the image processor locally in `workerd` |
 | `npm run deploy`     | Builds and deploys the Worker to Cloudflare                                 |
+| `npm run deploy:processor` | Deploys the image processor Worker                                    |
 | `npm run cf-typegen` | Regenerates `cloudflare-env.d.ts` after changing `wrangler.jsonc`           |
 | `npm run lint`       | ESLint                                                                      |
 | `npm run typecheck`  | TypeScript                                                                  |
@@ -57,6 +58,26 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
 - **Images**: `next/image` uses a custom loader (`lib/imageLoader.ts`) that rewrites to
   `/cdn-cgi/image/...` so Cloudflare resizes, re-encodes and caches images at the edge.
   Image transformations must be enabled on the zone.
+- **Image storage**: two R2 buckets. `next-gallery-originals` (private) holds uploads as
+  `raw/<id>.<ext>`; `next-gallery-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
+  processed `thumb/<id>.webp` and watermarked `marked/<id>.webp`.
+
+### Image uploads
+
+1. The admin upload page creates the image record, then `PUT`s the file to
+   `/api/image/<id>/upload`, which streams it into the originals bucket and queues a message on
+   the `image-processing` queue.
+2. `workers/image-processor` consumes the queue: it reads the EXIF data, generates the
+   thumbnail and watermarked image with the Cloudflare Images binding, writes them to the images
+   bucket and `PATCH`es the record (dimensions + EXIF) back through a service binding to the app.
+3. The upload page polls until the record has dimensions, then opens the edit page.
+
+Failures are retried with backoff and then moved to the `image-processing-dlq` queue.
+`POST /api/image/<id>/process` requeues an image whose original is already uploaded.
+
+Run `npm run preview` to run the app and the processor together locally. Note that wrangler's
+local Images emulation ignores `draw()`, so the watermark only appears when running against
+Cloudflare (e.g. set `"remote": true` on the processor's `IMAGES` binding).
 
 See `docs/runbooks` for provisioning and migration steps.
 

@@ -33,12 +33,11 @@ function formatBytes(bytes: number, decimals = 1) {
 
 function uploadWithProgress(
   url: string,
-  formData: FormData | Blob,
+  body: Blob,
   contentType: string | undefined,
   onUploadProgress: (
     progress: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void,
-  onEvent: (message: string, response: string) => void
+  ) => void
 ) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -51,48 +50,53 @@ function uploadWithProgress(
       xhr.setRequestHeader('Content-Type', contentType);
     }
 
-    let seenBytes = 0;
     xhr.onreadystatechange = () => {
-      if (xhr.readyState == 3) {
-        const newData = xhr.response.substring(seenBytes);
-        seenBytes = xhr.responseText.length;
-
-        if (xhr.status < 400) {
-          onEvent(newData, xhr.response);
-        } else {
-          reject(xhr.response);
-          xhr.abort();
-        }
-      } else if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
+      if (xhr.readyState === 4) {
+        if (xhr.status >= 200 && xhr.status < 300) {
           resolve(xhr.response);
         } else {
-          reject(xhr.response);
+          reject(new Error(xhr.responseText || `Upload failed (${xhr.status})`));
         }
       }
     };
 
-    xhr.send(formData);
+    xhr.send(body);
   });
 }
 
 /**
- * Images are always uploaded directly to the storage bucket using a signed
- * URL; processing happens asynchronously outside the web app. (The local
- * sharp-based upload route cannot run on Cloudflare Workers.)
+ * Uploads the original into R2 through the app; processing (thumbnail,
+ * watermark, EXIF) then happens asynchronously in workers/image-processor.
  */
-async function getData(file: File, image: Image) {
-  const endpoint = await fetch(
-    `/api/auth/aws-signed-url?file=${file.name}&id=${image.id}`
-  )
-    .then((r) => r.json() as Promise<{ signedURL: string }>)
-    .then((r) => r.signedURL);
-
+function getData(file: File, image: Image) {
   return {
-    endpoint,
+    endpoint: `/api/image/${image.id}/upload`,
     contentType: file.type,
     body: new Blob([file], { type: file.type }),
   };
+}
+
+const PROCESSING_POLL_INTERVAL_MS = 2000;
+const PROCESSING_TIMEOUT_MS = 2 * 60 * 1000;
+
+/**
+ * Waits for the image processor to fill in the image dimensions,
+ * which it does as the final step of processing.
+ */
+async function waitForProcessing(id: number): Promise<boolean> {
+  const deadline = Date.now() + PROCESSING_TIMEOUT_MS;
+
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, PROCESSING_POLL_INTERVAL_MS));
+
+    const res = await fetch(`/api/image/${id}`);
+    if (res.ok) {
+      const image = (await res.json()) as Image;
+      if (image.width > 0) return true;
+    }
+  }
+
+  return false;
 }
 
 const UploadImage: React.FC<IServerSideProps> = ({
@@ -120,7 +124,7 @@ const UploadImage: React.FC<IServerSideProps> = ({
       setServerMessages(undefined);
       setError(undefined);
 
-      // width and height are required, but set on upload
+      // width and height are required, but set by the image processor
       saveData.width = 0;
       saveData.height = 0;
 
@@ -132,24 +136,29 @@ const UploadImage: React.FC<IServerSideProps> = ({
 
       const file = images[0].file!;
 
-      const { endpoint, body, contentType } = await getData(file, image);
+      const { endpoint, body, contentType } = getData(file, image);
 
-      await uploadWithProgress(
-        endpoint,
-        body,
-        contentType,
-        (progress) => {
+      try {
+        await uploadWithProgress(endpoint, body, contentType, (progress) => {
           setProgress(progress.loaded / progress.total);
-        },
-        (_, response) => setServerMessages(response.split('\n'))
-      )
-        .then(async () => {
-          await router.push(`/admin/images/${image.id}`);
-        })
-        .catch(async (error) => {
-          setError(error.message || error);
-          await ImageService.deleteImage(image.id);
         });
+      } catch (error) {
+        setError((error as Error)?.message || String(error));
+        await ImageService.deleteImage(image.id);
+        return;
+      }
+
+      setServerMessages(['Upload complete, waiting for processing...']);
+
+      if (await waitForProcessing(image.id)) {
+        await router.push(`/admin/images/${image.id}`);
+      } else {
+        setError(
+          'Processing is taking longer than expected. The image has been uploaded; ' +
+            'check the image-processor worker logs, or reprocess it with ' +
+            `POST /api/image/${image.id}/process.`
+        );
+      }
     },
     [images, router]
   );
