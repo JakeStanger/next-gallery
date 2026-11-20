@@ -76,34 +76,23 @@ function uploadWithProgress(
   });
 }
 
+/**
+ * Images are always uploaded directly to the storage bucket using a signed
+ * URL; processing happens asynchronously outside the web app. (The local
+ * sharp-based upload route cannot run on Cloudflare Workers.)
+ */
 async function getData(file: File, image: Image) {
-  const directUpload =
-    process.env
-      .NEXT_PUBLIC_DIRECT_S3_UPLOAD &&
-        process.env.NODE_ENV === 'production'
+  const endpoint = await fetch(
+    `/api/auth/aws-signed-url?file=${file.name}&id=${image.id}`
+  )
+    .then((r) => r.json() as Promise<{ signedURL: string }>)
+    .then((r) => r.signedURL);
 
-  if (directUpload) {
-    const endpoint = await fetch(
-      `/api/auth/aws-signed-url?file=${file.name}&id=${image.id}`
-    )
-      .then((r) => r.json())
-      .then((r) => r.signedURL);
-
-    return {
-      endpoint,
-      contentType: file.type,
-      body: new Blob([file], {type: file.type})
-    }
-  } else {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return {
-      endpoint: `/api/image/${image.id}/upload`,
-      contentType: undefined,
-      body: formData
-    }
-  }
+  return {
+    endpoint,
+    contentType: file.type,
+    body: new Blob([file], { type: file.type }),
+  };
 }
 
 const UploadImage: React.FC<IServerSideProps> = ({

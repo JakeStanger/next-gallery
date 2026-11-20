@@ -18,6 +18,6 @@
     "noUnusedParameters": true,
     "incremental": true
   },
-  "exclude": ["node_modules", "lambda"],
+  "exclude": ["node_modules", "lambda", ".open-next", "worker.ts"],
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"]
 }

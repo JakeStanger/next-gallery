@@ -1,7 +1,7 @@
 import React, { CSSProperties, useCallback, useState } from 'react';
 import NextImage from 'next/image';
 import IImageProps from './IImageProps';
-import useImageSrc from '../../lib/utils/useImageSrc';
+import getImageUrl from '../../lib/getImageUrl';
 import styles from './Image.module.scss';
 
 /**
@@ -27,8 +27,8 @@ const Image: React.FC<IImageProps> = ({
   width,
   ...props
 }) => {
-  const thumbSrc = useImageSrc(imageId, false);
-  const src = useImageSrc(imageId, full);
+  const thumbSrc = getImageUrl(imageId, false);
+  const src = getImageUrl(imageId, full);
 
   const [loaded, setLoaded] = useState(false);
 

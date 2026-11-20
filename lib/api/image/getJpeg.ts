@@ -5,7 +5,7 @@ import fs from 'fs';
 async function getJpeg(id: string, full: boolean) {
   const imagePath = getImageUrl(parseInt(id), full, true);
 
-  const fullPath = path.join(process.env.UPLOAD_DIR!, imagePath);
+  const fullPath = path.join(/*turbopackIgnore: true*/ process.env.UPLOAD_DIR!, imagePath);
   const fullPathJpeg = fullPath.replace(/webp$/, 'jpeg');
 
   if(fs.existsSync(fullPathJpeg)) {

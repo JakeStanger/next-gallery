@@ -3,13 +3,9 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons/faEnvelope';
 import { faFacebook } from '@fortawesome/free-brands-svg-icons/faFacebook';
 import { faInstagram } from '@fortawesome/free-brands-svg-icons/faInstagram';
 import { faPaypal } from '@fortawesome/free-brands-svg-icons/faPaypal';
-import { readFileSync } from 'fs';
-import path from 'path';
-import { contentDirectory } from '../../lib/utils/content';
+import { getContentFile } from '../../lib/utils/content';
 
-const iconRedbubble = readFileSync(
-  path.join(contentDirectory, 'contacts', 'redbubble.svg')
-).toString();
+const iconRedbubble = getContentFile('contacts/redbubble.svg');
 
 const links: ILinkLargeProps[] = [
   {

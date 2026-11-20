@@ -10,6 +10,7 @@ const config = [
       'lib/gen/**',
       'lambda/lib/**',
       'next-env.d.ts',
+      'cloudflare-env.d.ts',
     ],
   },
   ...nextCoreWebVitals,

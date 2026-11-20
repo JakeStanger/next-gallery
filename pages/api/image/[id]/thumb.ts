@@ -9,7 +9,7 @@ export const config = { api: { bodyParser: false, externalResolver: true } };
 
 const thumb = async (req: NextApiRequest, res: NextApiResponse) => {
   const imagePath = getImageUrl(parseInt(req.query.id as string), false, true);
-  const fullPath = path.join(process.env.UPLOAD_DIR!, imagePath);
+  const fullPath = path.join(/*turbopackIgnore: true*/ process.env.UPLOAD_DIR!, imagePath);
 
   if(fs.existsSync(fullPath)) {
     if(req.query.jpeg !== undefined) {

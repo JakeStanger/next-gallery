@@ -1,0 +1,64 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "next-gallery",
+  // Custom entry wrapping the OpenNext worker (.open-next/worker.js) with Sentry
+  "main": "worker.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "routes": [
+    { "pattern": "rstanger.co.uk", "custom_domain": true },
+    { "pattern": "www.rstanger.co.uk", "custom_domain": true }
+  ],
+  "services": [
+    {
+      // Self-reference used by OpenNext for ISR revalidation.
+      // The service name must match the worker name above.
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "next-gallery"
+    }
+  ],
+  "r2_buckets": [
+    {
+      // ISR / incremental cache storage
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "next-gallery-opennext-cache"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        // Queue for time-based ISR revalidation (`revalidate` in getStaticProps)
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ],
+  "hyperdrive": [
+    {
+      // Pooled connection to the Postgres database.
+      // Create with `wrangler hyperdrive create` (see docs/runbooks) and paste the id here.
+      "binding": "HYPERDRIVE",
+      "id": "<HYPERDRIVE_ID>",
+      // Used by `wrangler dev` / `opennextjs-cloudflare preview`
+      "localConnectionString": "postgresql://postgres:changeme@localhost:5432/gallery"
+    }
+  ],
+  // Non-secret runtime configuration. Secrets (NEXTAUTH_SECRET, GOOGLE_CLIENT_SECRET,
+  // STRIPE_SECRET_KEY, API_TOKEN, ...) are set with `wrangler secret put`.
+  "vars": {
+    "NEXTAUTH_URL": "https://rstanger.co.uk"
+  }
+}
