@@ -1,4 +1,4 @@
-import { Category } from '@prisma/client';
+import { Category } from '../gen/client';
 
 /**
  * Category with list of associated IDs.

@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.896.0",
-    "sharp-thumbnailer": "^1.0.5"
+    "sharp-thumbnailer": "^1.0.9",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/node": "^22.18.6",

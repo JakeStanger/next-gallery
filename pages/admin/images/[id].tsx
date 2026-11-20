@@ -4,7 +4,7 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
 import Image from '../../../components/image/Image';
-import { Category, PriceGroup, Prisma } from '@prisma/client';
+import { Category, PriceGroup, Prisma } from '../../../lib/gen/client';
 import FullImage from '../../../lib/types/FullImage';
 import ImageForm from '../../../components/admin/imageForm/ImageForm';
 import { useRouter } from 'next/router';

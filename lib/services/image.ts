@@ -1,4 +1,4 @@
-import { Image, Prisma } from '@prisma/client';
+import { Image, Prisma } from '../gen/client';
 
 class ImageService {
   public static async createImage(

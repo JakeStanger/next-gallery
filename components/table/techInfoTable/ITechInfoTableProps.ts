@@ -1,4 +1,4 @@
-import { Image } from '@prisma/client';
+import { Image } from '../../../lib/gen/client';
 
 interface ITechInfoTableProps {
   image: Image;

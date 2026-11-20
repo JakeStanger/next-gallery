@@ -1,4 +1,4 @@
-import { Image, Price } from '@prisma/client';
+import { Image, Price } from '../gen/client';
 import IBasketItem from './IBasketItem';
 
 class BasketService {

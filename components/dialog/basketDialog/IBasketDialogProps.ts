@@ -1,5 +1,5 @@
 import IDialogProps from '../IDialogProps';
-import { Image, Price, PriceGroup } from '@prisma/client';
+import { Image, Price, PriceGroup } from '../../../lib/gen/client';
 
 interface IBasketDialogProps extends Omit<IDialogProps, 'title'> {
   image: Image & { priceGroup: (PriceGroup & { prices: Price[] }) | null };

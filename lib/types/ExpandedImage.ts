@@ -1,4 +1,4 @@
-import { Category, Image, Location, Tag } from '@prisma/client';
+import { Category, Image, Location, Tag } from '../gen/client';
 
 type ExpandedImage = Image & {
   categories: Category[];

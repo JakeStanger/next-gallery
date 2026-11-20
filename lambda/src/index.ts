@@ -8,6 +8,7 @@ import * as fs from 'fs';
 // @ts-ignore
 import thumbnailer from 'sharp-thumbnailer';
 import { Readable } from 'node:stream';
+import { Client as PgClient } from 'pg';
 
 const s3 = new S3Client();
 
@@ -43,12 +44,14 @@ export const handler = async (event: S3Event): Promise<any> => {
 
     const tmpPath = `/tmp/${Math.random().toString(36).substring(2)}`;
 
-    const object = await s3.send(
-      new GetObjectCommand({
-        Bucket: record.s3.bucket.name,
-        Key: record.s3.object.key,
-      })
-    ).then(r => r.Body);
+    const object = await s3
+      .send(
+        new GetObjectCommand({
+          Bucket: record.s3.bucket.name,
+          Key: record.s3.object.key,
+        })
+      )
+      .then((r) => r.Body);
 
     let objBuffer: Buffer;
     if (object instanceof Readable) {
@@ -74,7 +77,7 @@ export const handler = async (event: S3Event): Promise<any> => {
     }
 
     if (!exifData) {
-      throw new Error('Error fetching exif data');
+      console.error('Error fetching exif data');
     }
 
     const thumbJpeg = thumbnail.clone().jpeg();
@@ -106,14 +109,46 @@ export const handler = async (event: S3Event): Promise<any> => {
     await upload('marked', 'jpeg', await markedJpeg.toBuffer());
 
     console.log('Updating record');
-    await fetch(`${process.env.NEXT_GALLERY_URL}/api/image/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(exifData),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.NEXT_GALLERY_TOKEN}`,
-      },
-    });
+    // await fetch(`${process.env.NEXT_GALLERY_URL}/api/image/${id}`, {
+    //   method: 'PATCH',
+    //   body: JSON.stringify(exifData),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     Authorization: `Bearer ${process.env.NEXT_GALLERY_TOKEN}`,
+    //   },
+    // });
+
+    if (exifData) {
+      const queryKeys = Object.keys(exifData).filter((k) => exifData[k]);
+      const queryParts = [];
+      const params = [id];
+
+      for (let i = 0; i < queryKeys.length; i++) {
+        const key = queryKeys[i];
+        queryParts.push(`${key} = $${i + 2}`);
+        params.push(exifData[key]);
+      }
+
+      const setQuery = queryParts.join(', ');
+      if(!setQuery) return;
+
+      const pgClient = new PgClient({
+        connectionString: process.env.PG_CONNECTION_STRING,
+      });
+
+      await pgClient.connect();
+
+      try {
+        const query = `UPDATE Image SET ${setQuery} WHERE id = $1`;
+        console.log(query);
+
+        await pgClient.query(query, params);
+      } catch (err) {
+        console.error('DB error: ', err);
+      } finally {
+        await pgClient.end();
+      }
+    }
   });
 
   await Promise.all(processes);

@@ -4,7 +4,7 @@ import Table from '../../../components/admin/table/Table';
 import Image from '../../../components/image/Image';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
-import { Category, Group, PriceGroup } from '@prisma/client';
+import { Category, Group, PriceGroup } from '../../../lib/gen/client';
 import Link from 'next/link';
 import Button from '@mui/material/Button';
 import processImageReqBody from '../../../lib/api/processors/processImageReqBody';

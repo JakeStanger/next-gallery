@@ -3,7 +3,7 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import Table from '../../../components/admin/table/Table';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
-import { Image } from '@prisma/client';
+import { Image } from '../../../lib/gen/client';
 
 interface IServerSideProps {
   images: Image[]

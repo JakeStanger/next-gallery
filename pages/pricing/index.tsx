@@ -4,7 +4,7 @@ import { GetStaticProps } from 'next';
 import { getMarkdownContent } from '../../lib/utils/content';
 import PriceTable from '../../components/table/priceTable/PriceTable';
 import prisma from '../../lib/client/prisma';
-import { Price, PriceGroup } from '@prisma/client';
+import { Price, PriceGroup } from '../../lib/gen/client';
 
 interface IProps {
   preamble: string;

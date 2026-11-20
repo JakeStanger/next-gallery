@@ -3,7 +3,7 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import Table from '../../../components/admin/table/Table';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
-import { PriceGroup } from '@prisma/client';
+import { PriceGroup } from '../../../lib/gen/client';
 import processPriceReqBody from '../../../lib/api/processors/processPriceReqBody';
 
 interface IServerSideProps {

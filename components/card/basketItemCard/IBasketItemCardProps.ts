@@ -1,4 +1,4 @@
-import { Image, Price, PriceGroup } from '@prisma/client';
+import { Image, Price, PriceGroup } from '../../../lib/gen/client';
 import IBasketItem from '../../../lib/services/IBasketItem';
 
 interface IBasketItemCardProps {

@@ -1,6 +1,8 @@
 generator client {
-  provider = "prisma-client-js"
-  runtime  = "nodejs"
+  provider   = "prisma-client"
+  runtime    = "nodejs"
+  engineType = "client"
+  output     = "../lib/gen"
   // previewFeatures = ["nativeTypes"]
 }
 

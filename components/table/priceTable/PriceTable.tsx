@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './PriceTable.module.scss';
 import IPriceTableProps from './IPriceTableProps';
 import { css } from '../../../lib/utils/css';
-import type { Price } from '@prisma/client';
+import type { Price } from '../../../lib/gen/client';
 
 const Price: React.FC<{ className: string; price: number | null }> = ({
   className,

@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../../lib/gen/client';
 import FullImage from '../../types/FullImage';
 import { cloneDeep } from 'lodash';
 
