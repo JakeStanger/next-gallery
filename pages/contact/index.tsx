@@ -32,7 +32,8 @@ const Contact: React.FC<IStaticProps> = ({ preamble, content, links }) => {
             // this fits nicely
             width={700}
             height={467}
-            layout={'responsive'}
+            sizes={'(max-width: 750px) 100vw, 40vw'}
+            style={{ width: '100%', height: 'auto' }}
           />
         </div>
         <div dangerouslySetInnerHTML={{ __html: content }}></div>

@@ -10,6 +10,20 @@ import Checkbox from '@mui/material/Checkbox';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DateTime } from 'luxon';
+
+/**
+ * MUI X v6+ pickers operate on adapter-native values (Luxon DateTime)
+ * rather than JS Dates. Values reach this form as Dates (superjson props)
+ * or ISO strings (JSON API).
+ */
+function toDateTime(value: unknown): DateTime | null {
+  if (value === null || value === undefined || value === '') return null;
+  if (DateTime.isDateTime(value)) return value;
+  if (value instanceof Date) return DateTime.fromJSDate(value);
+  if (typeof value === 'string') return DateTime.fromISO(value);
+  return null;
+}
 
 const FormField: React.FC<IFormFieldProps> = (props) => {
   const { field, value, type, label, onChange, choices } = props;
@@ -123,9 +137,11 @@ const FormField: React.FC<IFormFieldProps> = (props) => {
           value={value ?? ''}
           onChange={onFieldChange}
           variant='outlined'
-          inputProps={{
-            min: 0,
-            step: type === 'float' ? 0.001 : 1,
+          slotProps={{
+            htmlInput: {
+              min: 0,
+              step: type === 'float' ? 0.001 : 1,
+            },
           }}
         />
       );
@@ -133,12 +149,16 @@ const FormField: React.FC<IFormFieldProps> = (props) => {
       return (
         <DateTimePicker
           label={label}
-          // @ts-ignore TODO: Remove once typing issues resolved
-          renderInput={(props) => <TextField variant="outlined" {...props} />}
-          value={value}
-          onChange={(newValue) => onChange({ value: newValue, field })}
+          slotProps={{ textField: { variant: 'outlined' } }}
+          value={toDateTime(value)}
+          onChange={(newValue: DateTime | null) =>
+            onChange({
+              value: newValue?.isValid ? newValue.toJSDate() : null,
+              field,
+            })
+          }
           ampm={false}
-          inputFormat={'dd MMMM yyyy T'}
+          format={'dd MMMM yyyy T'}
         />
       );
   }

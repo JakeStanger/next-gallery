@@ -1,10 +1,15 @@
-import AWS from 'aws-sdk';
+import { S3Client } from '@aws-sdk/client-s3';
 
-const s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  signatureVersion: 'v4',
+// aws-sdk v2 reached end-of-support; v3 modular client.
+const s3 = new S3Client({
   region: process.env.AWS_S3_REGION,
-  accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY
+  credentials:
+    process.env.AWS_S3_ACCESS_KEY_ID && process.env.AWS_S3_SECRET_ACCESS_KEY
+      ? {
+          accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+        }
+      : undefined,
 });
+
 export default s3;

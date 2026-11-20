@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './PriceTable.module.scss';
 import IPriceTableProps from './IPriceTableProps';
 import { css } from '../../../lib/utils/css';
-import type { Price } from '../../../lib/gen/client';
+import type { Price as PriceModel } from '../../../lib/gen/client';
 
 const Price: React.FC<{ className: string; price: number | null }> = ({
   className,
@@ -35,7 +35,7 @@ const PriceTable: React.FC<IPriceTableProps> = ({
             <div className={styles.header}>Price</div>
 
             {!excludePostage && <div className={styles.header}>Postage</div>}
-            {(priceGroup.prices as Price[]).map((price, i) => {
+            {(priceGroup.prices as PriceModel[]).map((price, i) => {
               const className = css(styles.cell, i % 2 === 1 && styles.stripe);
               return (
                 <React.Fragment key={price.id}>

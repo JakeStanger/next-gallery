@@ -119,14 +119,29 @@ export const handler = async (event: S3Event): Promise<any> => {
     // });
 
     if (exifData) {
-      const queryKeys = Object.keys(exifData).filter((k) => exifData[k]);
-      const queryParts = [];
-      const params = [id];
+      // Only allow known columns, and quote identifiers: Postgres folds
+      // unquoted names to lower case, which doesn't match Prisma's
+      // camelCase "Image" table/columns.
+      const allowedColumns = [
+        'exposure',
+        'focalLength',
+        'aperture',
+        'iso',
+        'cameraModel',
+        'timeTaken',
+      ];
+
+      const exif = exifData as Record<string, unknown>;
+      const queryKeys = Object.keys(exif).filter(
+        (k) => allowedColumns.includes(k) && exif[k]
+      );
+      const queryParts: string[] = [];
+      const params: unknown[] = [parseInt(id)];
 
       for (let i = 0; i < queryKeys.length; i++) {
         const key = queryKeys[i];
-        queryParts.push(`${key} = $${i + 2}`);
-        params.push(exifData[key]);
+        queryParts.push(`"${key}" = $${i + 2}`);
+        params.push(exif[key]);
       }
 
       const setQuery = queryParts.join(', ');
@@ -139,7 +154,7 @@ export const handler = async (event: S3Event): Promise<any> => {
       await pgClient.connect();
 
       try {
-        const query = `UPDATE Image SET ${setQuery} WHERE id = $1`;
+        const query = `UPDATE "Image" SET ${setQuery} WHERE id = $1`;
         console.log(query);
 
         await pgClient.query(query, params);

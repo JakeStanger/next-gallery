@@ -1,4 +1,4 @@
-import { Image, Group } from '../gen/client';
+import type { Image, Group } from '../gen/client';
 
 function isGroup(
   imageOrGroup: Image | Group

@@ -1,4 +1,4 @@
-import { Prisma, Price, PriceGroup } from '../../../lib/gen/client';
+import type { Prisma, Price, PriceGroup } from '../../gen/client';
 import { cloneDeep } from 'lodash';
 
 function processPriceReqBody(

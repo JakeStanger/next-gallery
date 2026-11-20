@@ -1,4 +1,4 @@
-import { Image, Prisma } from '../gen/client';
+import type { Image, Prisma } from '../gen/client';
 
 class ImageService {
   public static async createImage(

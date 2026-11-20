@@ -6,9 +6,7 @@ import Link from 'next/link';
 const Admin: React.FC = () => {
   return (
     <AdminLayout>
-      <Link href={'/admin/images'}>
-        <a href={'/admin/images'}>Click here to redirect</a>
-      </Link>
+      <Link href={'/admin/images'}>Click here to redirect</Link>
     </AdminLayout>
   );
 };

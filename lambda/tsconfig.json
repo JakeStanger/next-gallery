@@ -1,27 +1,22 @@
 {
   "compilerOptions": {
     "outDir": "./lib",
-    "target": "ES2016",
-    "lib": [
-      "esnext"
-    ],
+    "target": "ES2022",
+    "lib": ["esnext"],
+    "types": ["node"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": true
   },
-  "exclude": [
-    "node_modules"
-  ],
-  "include": [
-    "src/**/*.ts",
-  ]
+  "exclude": ["node_modules"],
+  "include": ["src/**/*.ts"]
 }

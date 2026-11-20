@@ -1,4 +1,4 @@
-import { Image, Price, PriceGroup } from '../../../lib/gen/client';
+import type { Image, Price, PriceGroup } from '../../../lib/gen/client';
 import IBasketItem from '../../../lib/services/IBasketItem';
 
 interface IBasketItemCardProps {

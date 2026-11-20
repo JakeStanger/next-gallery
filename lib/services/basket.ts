@@ -1,4 +1,4 @@
-import { Image, Price } from '../gen/client';
+import type { Image, Price } from '../gen/client';
 import IBasketItem from './IBasketItem';
 
 class BasketService {

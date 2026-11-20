@@ -1,6 +1,6 @@
 import Layout from '../../components/Layout';
 import { GetStaticPaths, GetStaticProps } from 'next';
-import remark from 'remark';
+import { remark } from 'remark';
 import html from 'remark-html';
 import ImageComponent from '../../components/image/Image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -10,13 +10,14 @@ import Fraction from 'fraction.js';
 import TechInfoTable from '../../components/table/techInfoTable/TechInfoTable';
 import Link from 'next/link';
 import prisma from '../../lib/client/prisma';
-import { Image, Location, Price, PriceGroup } from '../../lib/gen/client';
+import type { Image, Location, Price, PriceGroup } from '../../lib/gen/client';
 import Button from '../../components/button/Button';
 import BasketDialog from '../../components/dialog/basketDialog/BasketDialog';
 import getImageUrl from '../../lib/getImageUrl';
 import Error from 'next/error';
 import useImageSrc from '../../lib/utils/useImageSrc';
 import { getMarkdownContent } from '../../lib/utils/content';
+import { serializeProps } from '../../lib/utils/superjsonProps';
 
 interface IProps {
   tableInfo: string;
@@ -97,7 +98,7 @@ const Photo: React.FC<IProps> = ({
       imageUrl={getImageUrl(image.id, false)}
     >
       <Link href={backHref}>
-        <a href={backHref}>Back to {image.groupId ? 'group' : 'gallery'}</a>
+        Back to {image.groupId ? 'group' : 'gallery'}
       </Link>
       <div className={styles.imageContainer} ref={imageContainer}>
         <a href={imageLink} target={'_blank'} rel={'noreferrer'}>
@@ -168,7 +169,7 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
     ? await remark()
         .use(html)
         .process(image.description)
-        .then((data) => data.toString())
+        .then((data) => String(data))
     : null;
 
   // calculate exposure on server
@@ -182,12 +183,12 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
   const tableInfo = await getMarkdownContent('pricing', 'table-info');
 
   return {
-    props: {
+    props: serializeProps({
       tableInfo,
       image,
       description,
       exposure,
-    },
+    }),
     revalidate: 15,
   };
 };

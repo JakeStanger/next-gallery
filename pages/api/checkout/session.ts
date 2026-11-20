@@ -1,12 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { IExpandedBasketItem } from '../../../lib/services/IBasketItem';
 import canShipBasket from '../../../lib/canShipBasket';
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
+import stripe from '../../../lib/stripe';
 import getImageUrl from '../../../lib/getImageUrl';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2020-08-27',
-});
 
 function absoluteUrl(req: NextApiRequest, setLocalhost: string) {
   let protocol = 'https:';
@@ -27,9 +24,10 @@ const session = async (req: NextApiRequest, res: NextApiResponse) => {
         req.query.session_id![0]
       );
       if (session) {
-        const customer = await stripe.customers.retrieve(
-          session.customer! as string
-        );
+        // Checkout no longer always creates a Customer for payment-mode sessions
+        const customer = session.customer
+          ? await stripe.customers.retrieve(session.customer as string)
+          : null;
         return res.json({ session, customer });
       } else {
         return res.status(404);
@@ -90,7 +88,6 @@ const session = async (req: NextApiRequest, res: NextApiResponse) => {
 
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
-        payment_method_types: ['card'],
         line_items: basketItems,
         shipping_address_collection: {
           allowed_countries: ['GB'],
@@ -99,7 +96,8 @@ const session = async (req: NextApiRequest, res: NextApiResponse) => {
         cancel_url: `${publicAddress}/basket`,
       });
 
-      return res.json({ id: session.id });
+      // stripe-js removed redirectToCheckout(); the client redirects to this URL.
+      return res.json({ id: session.id, url: session.url });
     }
     default: {
       res.setHeader('Allow', 'POST');

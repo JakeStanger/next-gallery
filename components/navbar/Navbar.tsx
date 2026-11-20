@@ -14,7 +14,6 @@ const Branding: React.FC<{ title?: string; homeUrl?: string }> = ({
 }) => {
   return (
     <Link href={homeUrl ?? '/'}>
-      <a>
       <div className={styles.branding}>
         <div className={styles.logo}>
           <Image
@@ -26,7 +25,6 @@ const Branding: React.FC<{ title?: string; homeUrl?: string }> = ({
         </div>
         {title && <div className={styles.title}>{title}</div>}
       </div>
-      </a>
     </Link>
   );
 };

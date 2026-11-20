@@ -1,4 +1,4 @@
-import { Category } from '../gen/client';
+import type { Category } from '../gen/client';
 
 /**
  * Category with list of associated IDs.

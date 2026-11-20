@@ -1,5 +1,5 @@
-import { Image } from '../../lib/gen/client';
-import { MouseEventHandler } from 'react';
+import type { Image } from '../../lib/gen/client';
+import type { MouseEventHandler, ReactNode } from 'react';
 
 interface ICardProps {
   image: Image;
@@ -7,6 +7,7 @@ interface ICardProps {
   title?: string;
   className?: string;
   href?: string | MouseEventHandler<HTMLDivElement>;
+  children?: ReactNode;
 }
 
 export default ICardProps;

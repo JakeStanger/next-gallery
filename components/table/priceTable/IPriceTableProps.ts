@@ -1,4 +1,4 @@
-import { Price, PriceGroup } from '../../../lib/gen/client';
+import type { Price, PriceGroup } from '../../../lib/gen/client';
 
 interface IPriceTableProps {
   priceGroups: (PriceGroup & { prices: Price[] })[];

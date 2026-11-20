@@ -1,14 +1,13 @@
 generator client {
-  provider   = "prisma-client"
-  runtime    = "nodejs"
-  engineType = "client"
-  output     = "../lib/gen"
-  // previewFeatures = ["nativeTypes"]
+  provider = "prisma-client"
+  runtime  = "nodejs"
+  output   = "../lib/gen"
 }
 
+// Connection URL is configured in prisma.config.ts (migrations)
+// and via the driver adapter in lib/client/prisma.ts (runtime).
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Category {

@@ -4,7 +4,8 @@ import { GetStaticProps } from 'next';
 import { getMarkdownContent } from '../../lib/utils/content';
 import PriceTable from '../../components/table/priceTable/PriceTable';
 import prisma from '../../lib/client/prisma';
-import { Price, PriceGroup } from '../../lib/gen/client';
+import type { Price, PriceGroup } from '../../lib/gen/client';
+import { serializeProps } from '../../lib/utils/superjsonProps';
 
 interface IProps {
   preamble: string;
@@ -30,11 +31,11 @@ export const getStaticProps: GetStaticProps<IProps> = async () => {
   const tableInfo = await getMarkdownContent('pricing', 'table-info');
 
   return {
-    props: {
+    props: serializeProps({
       preamble,
       tableInfo,
       priceGroups,
-    },
+    }),
     revalidate: 15
   };
 };

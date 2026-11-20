@@ -13,6 +13,7 @@ import useDebouncedMemo from '../lib/utils/useDebouncedMemo';
 import ExpandedCategory from '../lib/types/ExpandedCategory';
 import ExpandedImage from '../lib/types/ExpandedImage';
 import ExpandedGroup from '../lib/types/ExpandedGroup';
+import { serializeProps } from '../lib/utils/superjsonProps';
 
 interface IServerSideProps {
   categories: ExpandedCategory[];
@@ -184,11 +185,11 @@ export const getStaticProps: GetStaticProps = async () => {
   });
 
   return {
-    props: {
+    props: serializeProps({
       categories,
       images: imageMap,
       groups: groupMap,
-    },
+    }),
     revalidate: 30,
   };
 };

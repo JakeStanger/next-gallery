@@ -1,4 +1,4 @@
-import { Image } from '../../../lib/gen/client';
+import type { Image } from '../../../lib/gen/client';
 
 interface ITechInfoTableProps {
   image: Image;

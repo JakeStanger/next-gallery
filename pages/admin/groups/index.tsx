@@ -3,7 +3,8 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import Table from '../../../components/admin/table/Table';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
-import { Image } from '../../../lib/gen/client';
+import type { Image } from '../../../lib/gen/client';
+import { serializeProps } from '../../../lib/utils/superjsonProps';
 
 interface IServerSideProps {
   images: Image[]
@@ -44,9 +45,9 @@ const PriceGroups: React.FC<IServerSideProps> = ({ images }) => {
 export const getServerSideProps: GetServerSideProps<IServerSideProps> = async () => {
   const images = await prisma.image.findMany();
   return {
-    props: {
+    props: serializeProps({
       images,
-    }
+    }),
   };
 };
 

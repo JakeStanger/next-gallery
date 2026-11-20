@@ -6,16 +6,16 @@ import IBasketItem, {
   IExpandedBasketItem,
 } from '../../lib/services/IBasketItem';
 import prisma from '../../lib/client/prisma';
-import { Image, Price, PriceGroup } from '../../lib/gen/client';
+import type { Image, Price, PriceGroup } from '../../lib/gen/client';
 import { useRouter } from 'next/router';
 import Button from '../../components/button/Button';
 import styles from './index.module.scss';
 import Dialog from '../../components/dialog/Dialog';
 import BasketItemCard from '../../components/card/basketItemCard/BasketItemCard';
-import Masonry from 'react-masonry-component';
+import Masonry from '../../components/masonry/Masonry';
 import Link from 'next/link';
 import canShipBasket from '../../lib/canShipBasket';
-import getStripe from '../../lib/getStripe';
+import { serializeProps } from '../../lib/utils/superjsonProps';
 
 interface IServerSideProps {
   images: Image[];
@@ -72,16 +72,16 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
 
   const onCheckout = useCallback(
     async (ship: boolean) => {
-      const stripe = await getStripe();
-
-      const sessionId = await BasketService.createSession(
+      const { url } = await BasketService.createSession(
         basket,
         images,
         prices,
         ship
-      ).then((r) => r.id);
+      );
 
-      stripe?.redirectToCheckout({ sessionId });
+      if (url) {
+        window.location.assign(url);
+      }
     },
     [basket, images, prices]
   );
@@ -132,9 +132,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
       {!basket.length && (
         <div>
           Your basket is empty right now.{' '}
-          <Link href={'/'}>
-            <a href={'/'}>Go to the gallery</a>
-          </Link>{' '}
+          <Link href={'/'}>Go to the gallery</Link>{' '}
           to add some items, and they&apos;ll show up here.
         </div>
       )}
@@ -188,10 +186,10 @@ export const getServerSideProps: GetServerSideProps<IServerSideProps> = async ()
   });
 
   return {
-    props: {
+    props: serializeProps({
       images,
       prices,
-    },
+    }),
   };
 };
 
