@@ -95,7 +95,9 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
   the edge. Image transformations must be enabled on the zone. Other images (static assets, and
   everything when no CDN URL is set, e.g. on workers.dev) are served as-is.
 - **Image storage**: two R2 buckets. `rstanger-images-raw` (private) holds uploads unchanged as
-  `raw/<id>.<ext>`, plus `processing/<id>.jpeg` processing copies (see below); `rstanger-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
+  `raw/<id>.<ext>`, plus `processing/<id>.jpeg` processing copies (see below), in the
+  [Infrequent Access](https://developers.cloudflare.com/r2/buckets/storage-classes/) storage class
+  since only the image processor reads them; `rstanger-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
   processed `thumb/<id>.webp` and watermarked `marked/<id>.webp`.
 
 ### Image uploads

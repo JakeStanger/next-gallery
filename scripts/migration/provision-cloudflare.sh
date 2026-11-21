@@ -22,10 +22,11 @@ WRANGLER=(npx --no-install wrangler)
 # location hint for the buckets and the database
 R2_LOCATION="${R2_LOCATION:-weur}"
 
+# name:default storage class
 BUCKETS=(
-  rstanger-opennext-cache # ISR cache (NEXT_INC_CACHE_R2_BUCKET)
-  rstanger-images         # public: thumb/, marked/ (IMAGES_BUCKET)
-  rstanger-images-raw      # private: raw/ (ORIGINALS_BUCKET)
+  rstanger-opennext-cache:Standard        # ISR cache (NEXT_INC_CACHE_R2_BUCKET)
+  rstanger-images:Standard                # public: thumb/, marked/ (IMAGES_BUCKET)
+  rstanger-images-raw:InfrequentAccess    # private: raw/ (ORIGINALS_BUCKET), rarely read
 )
 
 QUEUES=(
@@ -47,8 +48,11 @@ create() {
 }
 
 echo "Creating R2 buckets (location hint: $R2_LOCATION)..."
-for bucket in "${BUCKETS[@]}"; do
-  create r2 bucket create "$bucket" --location "$R2_LOCATION"
+for entry in "${BUCKETS[@]}"; do
+  bucket=${entry%%:*} storage_class=${entry#*:}
+  create r2 bucket create "$bucket" --location "$R2_LOCATION" --storage-class "$storage_class"
+  # Also applies the storage class to a bucket that already existed
+  "${WRANGLER[@]}" r2 bucket update storage-class "$bucket" --storage-class "$storage_class" >/dev/null
 done
 
 echo "Creating queues..."

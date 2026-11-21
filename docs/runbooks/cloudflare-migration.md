@@ -9,7 +9,7 @@ processing and the database all switch together.
 | Database | PostgreSQL on the VPS | D1 `rstanger-db` |
 | Image processing | AWS Lambda (S3 trigger) | Worker `next-gallery-image-processor` (Queue consumer) |
 | Processed images | S3 `thumb/`, `marked/` at `cdn.rstanger.co.uk` | R2 `rstanger-images` at `cdn.rstanger.co.uk` (same keys) |
-| Original uploads | S3 `raw/` | R2 `rstanger-images-raw` (private) |
+| Original uploads | S3 `raw/` | R2 `rstanger-images-raw` (private, Infrequent Access) |
 | Image resizing/format | Next.js image optimisation | Cloudflare Images transformations (`/cdn-cgi/image`) |
 | ISR cache | Vercel | R2 `rstanger-opennext-cache` + Durable Object queue |
 
@@ -93,6 +93,19 @@ export R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=...
 DRY_RUN=1 scripts/migration/copy-s3-to-r2.sh   # review
 scripts/migration/copy-s3-to-r2.sh             # copy + verify
 ```
+
+Originals (`raw/`) are written as Infrequent Access: by the copy script and the upload endpoint
+explicitly, and by anything else through the bucket's default storage class (set by
+`provision-cloudflare.sh`). Objects copied before the storage class was set stay Standard; move
+them with a lifecycle rule dated today (R2 applies it within about 24 hours):
+
+```bash
+npx wrangler r2 bucket lifecycle add rstanger-images-raw raw-infrequent-access raw/ \
+  --ia-transition-date <YYYY-MM-DD>
+npx wrangler r2 bucket lifecycle list rstanger-images-raw
+```
+
+The rule can stay: new originals are already Infrequent Access, so it has nothing left to move.
 
 ## Phase 3: rehearsal on workers.dev
 

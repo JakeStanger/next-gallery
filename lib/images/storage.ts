@@ -20,6 +20,14 @@ export interface ImageProcessingMessage {
   processingKey?: string;
 }
 
+/**
+ * Storage class for the originals bucket. Originals and processing copies are read
+ * only by the image processor, a few times per upload, so the cheaper storage
+ * outweighs the retrieval fee.
+ * https://developers.cloudflare.com/r2/buckets/storage-classes/
+ */
+export const ORIGINALS_STORAGE_CLASS = 'InfrequentAccess';
+
 export function getImageBindings() {
   const { env } = getCloudflareContext();
 
