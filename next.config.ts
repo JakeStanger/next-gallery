@@ -2,8 +2,12 @@ import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs/config';
 import bundleAnalyzer from '@next/bundle-analyzer';
 import packageJson from './package.json' with { type: 'json' };
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 
-const { NEXT_PUBLIC_CDN_URL, ANALYZE } = process.env;
+// Makes Cloudflare bindings (getCloudflareContext) available to `next dev`
+initOpenNextCloudflareForDev();
+
+const { ANALYZE } = process.env;
 
 // dirty hack to get commit sha
 const version = packageJson.version;
@@ -14,6 +18,11 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const config: NextConfig = {
   productionBrowserSourceMaps: true,
+  // Stripe's `workerd` export resolves to ESM files that Next.js doesn't trace
+  // (it traces with Node.js conditions); include them for the Workers bundle.
+  outputFileTracingIncludes: {
+    '/*': ['./node_modules/stripe/esm/**/*'],
+  },
   env: {
     // Make the COMMIT_SHA available to the client so that Sentry events can be
     // marked for the release they belong to.
@@ -44,10 +53,9 @@ const config: NextConfig = {
     loadPaths: [process.cwd()],
   },
   images: {
-    // `images.domains` is deprecated in favour of `remotePatterns`
-    remotePatterns: NEXT_PUBLIC_CDN_URL
-      ? [new URL('/**', NEXT_PUBLIC_CDN_URL)]
-      : [],
+    // Optimised by Cloudflare Images transformations rather than Next.js
+    loader: 'custom',
+    loaderFile: './lib/imageLoader.ts',
     // Next 16 only allows quality=75 unless other values are listed
     qualities: [75, 90, 95],
   },

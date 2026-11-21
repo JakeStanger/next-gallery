@@ -15,7 +15,6 @@ import Button from '../../components/button/Button';
 import BasketDialog from '../../components/dialog/basketDialog/BasketDialog';
 import getImageUrl from '../../lib/getImageUrl';
 import Error from 'next/error';
-import useImageSrc from '../../lib/utils/useImageSrc';
 import { getMarkdownContent } from '../../lib/utils/content';
 import { serializeProps } from '../../lib/utils/superjsonProps';
 
@@ -84,7 +83,7 @@ const Photo: React.FC<IProps> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, [updateDimensions]);
 
-  const imageLink = useImageSrc(image.id, true);
+  const imageLink = getImageUrl(image.id, true);
 
   const backHref =
     (image.groupId ? `/group/${image.groupId}` : '/') + `#card-${image.id}`;

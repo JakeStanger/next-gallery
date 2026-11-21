@@ -15,11 +15,13 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!useAws) {
       const thumbPath = path.join(
+        /*turbopackIgnore: true*/
         process.env.UPLOAD_DIR ?? 'uploads',
         'thumb',
         `${id}.webp`
       );
       const markedPath = path.join(
+        /*turbopackIgnore: true*/
         process.env.UPLOAD_DIR ?? 'uploads',
         'marked',
         `${id}.webp`

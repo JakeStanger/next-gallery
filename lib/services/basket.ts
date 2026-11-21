@@ -75,7 +75,7 @@ class BasketService {
           image: images.find((im) => im.id === i.imageId)!,
         })),
       }),
-    }).then((r) => r.json());
+    }).then((r) => r.json() as Promise<{ id: string; url: string | null }>);
   }
 }
 

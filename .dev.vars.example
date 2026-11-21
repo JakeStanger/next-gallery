@@ -1,0 +1,14 @@
+# Secrets for `npm run preview` (wrangler dev). Copy to .dev.vars.
+# In production set each with: npx wrangler secret put <NAME>
+NEXTJS_ENV=development
+NEXTAUTH_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+AUTHORIZED_EMAILS=
+STRIPE_SECRET_KEY=
+API_TOKEN=
+SENTRY_DSN=
+AWS_S3_ACCESS_KEY_ID=
+AWS_S3_SECRET_ACCESS_KEY=
+AWS_S3_REGION=
+AWS_S3_BUCKET_NAME=

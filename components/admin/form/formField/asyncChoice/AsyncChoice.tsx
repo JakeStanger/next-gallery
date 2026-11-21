@@ -23,7 +23,7 @@ const AsyncChoice: React.FC<IAsyncChoiceProps> = ({
     () =>
       throttle((input: string, callback: (results?: any[]) => void) => {
         fetch(`/api/${model as string}?$search=${input}&$top=10`)
-          .then((r) => r.json())
+          .then((r) => r.json() as Promise<{ data: any[] }>)
           .then((r) => callback(r.data));
       }, 200),
     [model]
