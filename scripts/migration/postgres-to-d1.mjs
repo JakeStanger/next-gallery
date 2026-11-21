@@ -49,7 +49,6 @@ const MODELS = [
       'aperture', 'iso', 'cameraModel', 'timeTaken', 'locationId', 'priceGroupId', 'groupId',
     ],
   },
-  { model: 'event', table: 'Event', columns: ['id', 'name', 'location', 'startTime', 'endTime'] },
 ];
 
 const JOIN_TABLES = ['_CategoryToImage', '_ImageToTag'];

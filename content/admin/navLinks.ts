@@ -22,10 +22,6 @@ const navLinks: ILink[] = [
     href: '/admin/prices',
   },
   {
-    label: 'Events',
-    href: '/admin/events',
-  },
-  {
     label: 'Back to Site',
     href: '/',
   },
