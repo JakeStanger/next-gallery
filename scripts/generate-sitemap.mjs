@@ -1,10 +1,27 @@
 // Generates public/sitemap.xml from the page files and image records.
 //
-// Uses `pg` directly so it can run as a plain Node.js script.
+// Reads the production database by default; pass --local to use the local D1
+// database (.wrangler/state) instead.
 import fs from 'node:fs';
 import { globby } from 'globby';
-import pg from 'pg';
+import { getPlatformProxy } from 'wrangler';
 import 'dotenv/config';
+
+async function getImageIds() {
+  const local = process.argv.includes('--local');
+  const { env, dispose } = await getPlatformProxy({
+    environment: local ? undefined : 'remote-db',
+  });
+
+  try {
+    const { results } = await env.DB.prepare(
+      'SELECT id FROM "Image" ORDER BY id'
+    ).all();
+    return results.map((row) => row.id);
+  } finally {
+    await dispose();
+  }
+}
 
 async function generateSiteMap() {
   const pages = await globby([
@@ -17,15 +34,7 @@ async function generateSiteMap() {
     '!pages/4*',
   ]);
 
-  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
-  await client.connect();
-
-  try {
-    const { rows: images } = await client.query('SELECT id FROM "Image"');
-    pages.push(...images.map((i) => `/image/${i.id}`));
-  } finally {
-    await client.end();
-  }
+  pages.push(...(await getImageIds()).map((id) => `/image/${id}`));
 
   const sitemap = `
       <?xml version="1.0" encoding="UTF-8"?>
@@ -49,4 +58,7 @@ async function generateSiteMap() {
   console.log('Sitemap saved to file');
 }
 
-generateSiteMap().catch(console.error);
+generateSiteMap().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

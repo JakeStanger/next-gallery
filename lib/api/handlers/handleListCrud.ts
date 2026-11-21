@@ -112,29 +112,29 @@ async function handleListCrud({
 
         const query = ($search as string).trim();
 
+        // `contains` uses SQLite's LIKE, which is case-insensitive for ASCII
+        const contains = { contains: query };
+
         searchFields.forEach((search) => {
           if (search.childField) {
             if (!search.multi) {
               searchQuery.push({
                 [search.field]: {
-                  [search.childField]: { contains: query, mode: 'insensitive' },
+                  [search.childField]: contains,
                 },
               });
             } else {
               searchQuery.push({
                 [search.field]: {
                   some: {
-                    [search.childField]: {
-                      contains: query,
-                      mode: 'insensitive',
-                    },
+                    [search.childField]: contains,
                   },
                 },
               });
             }
           } else {
             searchQuery.push({
-              [search.field]: { contains: query, mode: 'insensitive' },
+              [search.field]: contains,
             });
           }
         });

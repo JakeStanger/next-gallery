@@ -22,13 +22,13 @@ it to be relatively easy to hack and customise.
 
 ## Development
 
-Requirements: Node.js 22+, a PostgreSQL database (`docker compose up -d` starts one).
+Requirements: Node.js 22+. The database is Cloudflare D1, emulated locally by wrangler.
 
 ```bash
-cp .env.example .env          # Next.js / Prisma configuration
+cp .env.example .env          # Next.js configuration
 cp .dev.vars.example .dev.vars # secrets for `npm run preview`
 npm install                   # also generates the Prisma client and inlined content
-npx prisma migrate deploy
+npm run db:migrate:local      # creates the local D1 database in .wrangler/state
 npm run dev
 ```
 
@@ -36,14 +36,31 @@ npm run dev
 |----------------------|-----------------------------------------------------------------------------|
 | `npm run dev`        | Next.js dev server, with Cloudflare bindings available via `getCloudflareContext` |
 | `npm run preview`    | Builds the app and runs it with the image processor locally in `workerd` |
-| `npm run deploy`     | Builds and deploys the Worker to Cloudflare                                 |
+| `npm run deploy`     | Builds (reading the production database for static pages) and deploys the Worker |
 | `npm run deploy:processor` | Deploys the image processor Worker                                    |
+| `npm run db:migrate:local` / `db:migrate:remote` | Applies `prisma/migrations` to the local / production D1 database |
 | `npm run cf-typegen` | Regenerates `cloudflare-env.d.ts` after changing `wrangler.jsonc`           |
 | `npm run lint`       | ESLint                                                                      |
 | `npm run typecheck`  | TypeScript                                                                  |
 
 Content under `content/` (markdown, svg) is inlined into a generated module at
 install/dev/build time, because Workers have no filesystem access at runtime.
+
+## Database changes
+
+1. Edit `prisma/schema.prisma`.
+2. Create a migration and fill it with the SQL Prisma generates:
+
+   ```bash
+   npx wrangler d1 migrations create rstanger-db <name>
+   git show HEAD:prisma/schema.prisma > /tmp/schema.before.prisma
+   npx prisma migrate diff --from-schema /tmp/schema.before.prisma --to-schema prisma/schema.prisma --script \
+     >> prisma/migrations/<number>_<name>.sql
+   ```
+
+   D1 doesn't support `PRAGMA foreign_keys`; if the generated SQL rebuilds a table with
+   `PRAGMA foreign_keys=off/on`, use `PRAGMA defer_foreign_keys = true;` at the start instead.
+3. Apply it with `npm run db:migrate:local`, and `npm run db:migrate:remote` before deploying.
 
 ## Hosting
 
@@ -53,8 +70,10 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
   The production build uses webpack (`next build --webpack`): Turbopack currently externalises
   `next` itself when a page imports `next/error`, which OpenNext cannot bundle.
 - **ISR cache**: R2 bucket (`NEXT_INC_CACHE_R2_BUCKET`) with a Durable Object revalidation queue.
-- **Database**: PostgreSQL via [Hyperdrive](https://developers.cloudflare.com/hyperdrive/) (`HYPERDRIVE`),
-  with Prisma's `pg` driver adapter. A Prisma client is created per request (see `lib/client/prisma.ts`).
+- **Database**: [D1](https://developers.cloudflare.com/d1/) (`DB`, database `rstanger-db`) with Prisma's
+  D1 driver adapter (`lib/client/prisma.ts`). `next build` reads it for static generation through
+  wrangler: the `deploy`/`upload` scripts select the `remote-db` wrangler environment so production
+  builds use the production database, while `next dev`/`preview` use the local one.
 - **Images**: `next/image` uses a custom loader (`lib/imageLoader.ts`) that rewrites to
   `/cdn-cgi/image/...` so Cloudflare resizes, re-encodes and caches images at the edge.
   Image transformations must be enabled on the zone.
