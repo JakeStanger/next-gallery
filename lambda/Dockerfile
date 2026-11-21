@@ -1,14 +1,14 @@
-FROM public.ecr.aws/lambda/nodejs:22
+FROM public.ecr.aws/lambda/nodejs:24
 
 # Copy function code
-COPY lib/index.js package.json ${LAMBDA_TASK_ROOT}
+COPY lib/index.js package.json package-lock.json ${LAMBDA_TASK_ROOT}
 
 # Commands
 RUN npm cache clean --force
 RUN rm -rf node_modules
 
 ## update the dockerfile with the following lines:
-RUN npm install
+RUN npm install --ci
 RUN SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp
 
 

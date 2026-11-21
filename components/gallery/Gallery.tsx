@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import styles from './Gallery.module.scss';
 import IGalleryProps from './IGalleryProps';
-import Masonry from 'react-masonry-component';
+import Masonry from '../masonry/Masonry';
 import isGroup from '../../lib/utils/isGroup';
 import Card from '../card/Card';
 import GroupCard from '../card/groupCard/GroupCard';
@@ -50,7 +50,7 @@ const Gallery: React.FC<IGalleryProps> = ({ imagesAndGroups }) => {
   const onLoad = useCallback(() => {
     if (location.hash) {
       document.querySelector(location.hash)?.scrollIntoView();
-      clearHash.callback();
+      clearHash();
     }
   }, [clearHash]);
 

@@ -4,7 +4,7 @@ import AdminLayout from '../../../components/admin/AdminLayout';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
 import Image from '../../../components/image/Image';
-import { Category, PriceGroup, Prisma } from '@prisma/client';
+import type { Category, PriceGroup, Prisma } from '@prisma/client';
 import FullImage from '../../../lib/types/FullImage';
 import ImageForm from '../../../components/admin/imageForm/ImageForm';
 import { useRouter } from 'next/router';
@@ -15,6 +15,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import ImageService from '../../../lib/services/image';
+import { serializeProps } from '../../../lib/utils/superjsonProps';
 
 interface IServerSideProps {
   categories: Category[];
@@ -173,11 +174,11 @@ export const getServerSideProps: GetServerSideProps<IServerSideProps> = async ({
   const priceGroups = await prisma.priceGroup.findMany();
 
   return {
-    props: {
+    props: serializeProps({
       image,
       categories,
       priceGroups,
-    },
+    }),
   };
 };
 

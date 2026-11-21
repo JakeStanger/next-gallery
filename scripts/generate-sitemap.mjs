@@ -1,7 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const globby = require('globby');
-require('dotenv').config();
+// Generates public/sitemap.xml from the page files and image records.
+//
+// Uses `pg` directly: Prisma 7 generates a TypeScript client (lib/gen)
+// which plain Node scripts cannot import.
+import fs from 'node:fs';
+import { globby } from 'globby';
+import pg from 'pg';
+import 'dotenv/config';
 
 async function generateSiteMap() {
   const pages = await globby([
@@ -14,12 +18,15 @@ async function generateSiteMap() {
     '!pages/4*',
   ]);
 
-  const prisma = new PrismaClient();
-  const images = await prisma.image.findMany({
-    select: { id: true },
-  });
+  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
 
-  pages.push(...images.map((i) => `/image/${i.id}`));
+  try {
+    const { rows: images } = await client.query('SELECT id FROM "Image"');
+    pages.push(...images.map((i) => `/image/${i.id}`));
+  } finally {
+    await client.end();
+  }
 
   const sitemap = `
       <?xml version="1.0" encoding="UTF-8"?>
@@ -32,7 +39,7 @@ async function generateSiteMap() {
                 .replace('.md', '');
               const route = path.replace(/\/?index$/, '');
               const url = new URL(route, process.env.NEXTAUTH_URL);
-              
+
               return `<url><loc>${url}</loc></url>`;
             })
             .join('')}

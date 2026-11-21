@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import remark from 'remark';
+import { remark } from 'remark';
 import html from 'remark-html';
 
 export const contentDirectory = path.join(process.cwd(), 'content');

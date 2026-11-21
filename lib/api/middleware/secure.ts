@@ -1,5 +1,6 @@
 import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/client';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../auth/options';
 
 const secure = (handler: NextApiHandler) => async (
   req: NextApiRequest,
@@ -13,7 +14,7 @@ const secure = (handler: NextApiHandler) => async (
     return handler(req, res);
   }
 
-  const session = await getSession({ req });
+  const session = await getServerSession(req, res, authOptions);
   if (!session) {
     return res.status(401).end('Not authorized');
   }

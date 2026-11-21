@@ -1,4 +1,4 @@
-import { Image, Group } from '@prisma/client';
+import type { Image, Group } from '@prisma/client';
 
 function isGroup(
   imageOrGroup: Image | Group

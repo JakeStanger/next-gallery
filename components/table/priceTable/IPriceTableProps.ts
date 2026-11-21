@@ -1,4 +1,4 @@
-import { Price, PriceGroup } from '@prisma/client';
+import type { Price, PriceGroup } from '@prisma/client';
 
 interface IPriceTableProps {
   priceGroups: (PriceGroup & { prices: Price[] })[];

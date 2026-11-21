@@ -4,12 +4,13 @@ import Table from '../../../components/admin/table/Table';
 import Image from '../../../components/image/Image';
 import { GetServerSideProps } from 'next';
 import prisma from '../../../lib/client/prisma';
-import { Category, Group, PriceGroup } from '@prisma/client';
+import type { Category, Group, PriceGroup } from '@prisma/client';
 import Link from 'next/link';
 import Button from '@mui/material/Button';
 import processImageReqBody from '../../../lib/api/processors/processImageReqBody';
 import type { Column } from '@material-table/core';
 import FullImage from '../../../lib/types/FullImage';
+import { serializeProps } from '../../../lib/utils/superjsonProps';
 
 interface IServerSideProps {
   groups: Group[];
@@ -43,15 +44,13 @@ const PriceGroups: React.FC<IServerSideProps> = ({
         editable: 'never',
         render: (data: FullImage) => (
           <Link href={`/admin/images/${data.id}`}>
-            <a>
-              <Image
-                key={data.id}
-                imageId={data.id}
-                alt={data.name}
-                width={data.width}
-                height={data.height}
-              />
-            </a>
+            <Image
+              key={data.id}
+              imageId={data.id}
+              alt={data.name}
+              width={data.width}
+              height={data.height}
+            />
           </Link>
         ),
       },
@@ -59,8 +58,8 @@ const PriceGroups: React.FC<IServerSideProps> = ({
         title: 'Name',
         field: 'name',
         render: (data: FullImage) => (
-          <Link href={`/admin/images/${data.id}`}>
-            <a title={'Link to edit form'}>{data.name}</a>
+          <Link href={`/admin/images/${data.id}`} title={'Link to edit form'}>
+            {data.name}
           </Link>
         ),
       },
@@ -95,13 +94,14 @@ const PriceGroups: React.FC<IServerSideProps> = ({
 
   return (
     <AdminLayout>
-      <Link href={'/admin/images/upload'}>
-        <a>
-          <Button variant='contained' color='primary'>
-            Upload Image
-          </Button>
-        </a>
-      </Link>
+      <Button
+        variant='contained'
+        color='primary'
+        component={Link}
+        href={'/admin/images/upload'}
+      >
+        Upload Image
+      </Button>
 
       <div>
         <Table
@@ -124,11 +124,11 @@ export const getServerSideProps: GetServerSideProps<
   const priceGroups = await prisma.priceGroup.findMany();
 
   return {
-    props: {
+    props: serializeProps({
       groups,
       categories,
       priceGroups,
-    },
+    }),
   };
 };
 

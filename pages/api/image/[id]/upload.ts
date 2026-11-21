@@ -3,9 +3,8 @@ import formidable, { File } from 'formidable';
 import * as fs from 'fs';
 import prisma from '../../../../lib/client/prisma';
 import path from 'path';
-import mkdirp from 'mkdirp';
 import s3 from '../../../../lib/aws';
-import { S3 } from 'aws-sdk';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import secure from '../../../../lib/api/middleware/secure';
 // @ts-ignore
 import thumbnailer from 'sharp-thumbnailer';
@@ -25,19 +24,20 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
 
   const id = parseInt(req.query.id as string);
 
-  const form = new formidable.IncomingForm({
+  const form = formidable({
     uploadDir: '/tmp',
     keepExtensions: true,
   });
 
   const file: File = await new Promise((resolve, reject) =>
     form.parse(req, (err, _fields, files) => {
-      if (err) {
+      if (err || !files.file?.[0]) {
         console.error(err);
         return reject('Error parsing uploaded file');
       }
 
-      resolve(files.file as File);
+      // formidable v3 always returns an array per field
+      resolve(files.file[0]);
     })
   );
 
@@ -48,7 +48,7 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
 
   res.write('Generating images\n');
 
-  const { thumbnail, marked, exifData } = await thumbnailer(file.path, {
+  const { thumbnail, marked, exifData } = await thumbnailer(file.filepath, {
     marked: { overlay: path.join('content', 'overlay.png') },
     thumbnail: true,
     exif: true,
@@ -73,8 +73,12 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!useAws) {
     // ensure upload dirs exist
-    mkdirp.sync(path.join(process.env.UPLOAD_DIR ?? 'uploads', 'thumb'));
-    mkdirp.sync(path.join(process.env.UPLOAD_DIR ?? 'uploads', 'marked'));
+    fs.mkdirSync(path.join(process.env.UPLOAD_DIR ?? 'uploads', 'thumb'), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(process.env.UPLOAD_DIR ?? 'uploads', 'marked'), {
+      recursive: true,
+    });
 
     const dir = (type: 'thumb' | 'marked', ext: string) =>
       path.join(process.env.UPLOAD_DIR ?? 'uploads', type, `${id}.${ext}`);
@@ -92,16 +96,16 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
       ext: 'webp' | 'jpeg',
       buffer: Buffer
     ) => {
-      const params: S3.Types.PutObjectRequest = {
-        Bucket: process.env.AWS_S3_BUCKET_NAME!,
-        Key: `${type}/${id}.${ext}`,
-        Body: buffer,
-        ACL: 'public-read',
-        ContentType: `image/${ext}`,
-        CacheControl: 'max-age=15552000', // 6 months
-      };
-
-      await s3.upload(params).promise();
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Key: `${type}/${id}.${ext}`,
+          Body: buffer,
+          ACL: 'public-read',
+          ContentType: `image/${ext}`,
+          CacheControl: 'max-age=15552000', // 6 months
+        })
+      );
     };
 
     res.write('Uploading webp files to AWS');
@@ -114,7 +118,7 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   // delete temporary file
-  fs.unlinkSync(file.path);
+  fs.unlinkSync(file.filepath);
 
   res.status(201).end();
 });

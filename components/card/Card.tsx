@@ -38,10 +38,8 @@ const Card: React.FC<ICardProps> = ({
     >
       {typeof href !== 'function' ? (
         <Link href={href ?? `/image/${image.id}`}>
-          <a href={href ?? `/image/${image.id}`}>
-            {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image {...imageProps} />
-          </a>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image {...imageProps} />
         </Link>
       ) : (
         // eslint-disable-next-line jsx-a11y/alt-text

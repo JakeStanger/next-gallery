@@ -8,7 +8,6 @@ const Dropdown: React.FC<IDropdownProps> = ({
   value,
   onChange,
   options,
-  placeholder
 }) => {
   return (
     <div className={styles.dropdown}>
@@ -17,7 +16,6 @@ const Dropdown: React.FC<IDropdownProps> = ({
         // name="mode"
         value={value}
         onChange={ev => onChange(ev.target.value)}
-        placeholder={placeholder}
       >
         {options.map(option => (
           <option key={option.key} value={option.key}>

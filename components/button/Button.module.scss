@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'styles/colors';
 
 .button {
@@ -16,7 +17,7 @@
   }
 
   &:disabled {
-    background-color: lighten(colors.$grey-light, 0.1);
+    background-color: color.adjust(colors.$grey-light, $lightness: 0.1%);
     opacity: 0.7;
     cursor: unset;
   }

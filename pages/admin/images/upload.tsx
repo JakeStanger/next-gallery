@@ -7,11 +7,12 @@ import { ImageListType } from 'react-images-uploading/dist/typings';
 import { css } from '../../../lib/utils/css';
 import getNameFromFile from '../../../lib/getNameFromFile';
 import { GetServerSideProps } from 'next';
-import { Image, Category, PriceGroup, Prisma } from '@prisma/client';
+import type { Image, Category, PriceGroup, Prisma } from '@prisma/client';
 import prisma from '../../../lib/client/prisma';
 import { useRouter } from 'next/router';
 import ImageService from '../../../lib/services/image';
 import isError from '../../../lib/utils/isError';
+import { serializeProps } from '../../../lib/utils/superjsonProps';
 
 interface IServerSideProps {
   categories: Category[];
@@ -257,10 +258,10 @@ export const getServerSideProps: GetServerSideProps<IServerSideProps> = async ()
   const priceGroups = await prisma.priceGroup.findMany();
 
   return {
-    props: {
+    props: serializeProps({
       categories,
       priceGroups,
-    },
+    }),
   };
 };
 

@@ -8,6 +8,7 @@ import prisma from '../../lib/client/prisma';
 import GroupWithImages from '../../lib/types/GroupWithImages';
 import getImageUrl from '../../lib/getImageUrl';
 import Error from 'next/error';
+import { serializeProps } from '../../lib/utils/superjsonProps';
 
 interface IProps {
   group: GroupWithImages;
@@ -43,9 +44,9 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
   });
 
   return {
-    props: {
+    props: serializeProps({
       group: group!,
-    },
+    }),
     revalidate: 15,
   };
 };

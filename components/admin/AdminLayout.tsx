@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { PropsWithChildren, useEffect } from 'react';
 import styles from './AdminLayout.module.scss';
 import Head from 'next/head';
 import Navbar from '../navbar/Navbar';
@@ -6,7 +6,7 @@ import adminNavLinks from '../../content/admin/navLinks';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useSession, signIn } from 'next-auth/client';
+import { useSession, signIn } from 'next-auth/react';
 import meta from '../../content/meta';
 
 const theme = createTheme({
@@ -20,8 +20,9 @@ const theme = createTheme({
   },
 });
 
-const AdminLayout: React.FC = ({ children }) => {
-  const [session, loading] = useSession();
+const AdminLayout: React.FC<PropsWithChildren> = ({ children }) => {
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
 
   useEffect(() => {
     if (!loading && !session && process.env.NODE_ENV !== 'development') {

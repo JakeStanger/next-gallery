@@ -2,14 +2,12 @@ import React, { useEffect } from 'react';
 import styles from './index.module.scss';
 import Layout from '../../../components/Layout';
 import { GetServerSideProps } from 'next';
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
+import stripe from '../../../lib/stripe';
 import { getMarkdownContent } from '../../../lib/utils/content';
 import Link from 'next/link';
 import { css } from '../../../lib/utils/css';
 import BasketService from '../../../lib/services/basket';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2020-08-27',
-});
 
 interface IServerSideProps {
   message: string;
@@ -32,9 +30,7 @@ const CheckoutSuccess: React.FC<IServerSideProps> = ({
 
   return (
     <Layout title={'Payment Successful'}>
-      <Link href={'/'}>
-        <a href={'/'}>Back to gallery</a>
-      </Link>
+      <Link href={'/'}>Back to gallery</Link>
       <div dangerouslySetInnerHTML={{ __html: message }} />
       {address && (
         <section>
@@ -76,9 +72,7 @@ const CheckoutSuccess: React.FC<IServerSideProps> = ({
           )}
         </div>
       </section>
-      <Link href={'/'}>
-        <a href={'/'}>Back to gallery</a>
-      </Link>
+      <Link href={'/'}>Back to gallery</Link>
     </Layout>
   );
 };
@@ -106,8 +100,8 @@ export const getServerSideProps: GetServerSideProps<IServerSideProps> = async ({
       message,
       items: session.line_items?.data,
       total: session.amount_total,
-      address: session.shipping?.address,
-      name: session.shipping?.name,
+      address: session.collected_information?.shipping_details?.address,
+      name: session.collected_information?.shipping_details?.name,
     },
   };
 };

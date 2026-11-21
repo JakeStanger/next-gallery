@@ -1,4 +1,4 @@
-import { Category, PriceGroup, Prisma } from "@prisma/client";
+import type { Category, PriceGroup, Prisma } from '@prisma/client';
 import FullImage from '../../../lib/types/FullImage';
 
 interface IImageFormProps {

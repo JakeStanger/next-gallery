@@ -1,15 +1,19 @@
 const { readFileSync, readdirSync } = require('fs');
 const path = require('path');
-const AWS = require('aws-sdk');
+const {
+  S3Client,
+  PutObjectCommand,
+  paginateListObjectsV2,
+} = require('@aws-sdk/client-s3');
 const { config } = require('dotenv');
 config();
 
-const s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  signatureVersion: 'v4',
+const s3 = new S3Client({
   region: process.env.AWS_S3_REGION,
-  accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+  credentials: {
+    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+  },
 });
 
 const thumbDir = path.join(process.env.UPLOAD_DIR, 'thumb');
@@ -40,37 +44,22 @@ const params = (thumb, buffer, file) => ({
 async function upload(thumb, file) {
   const buffer = readFileSync(path.join(thumb ? thumbDir : markedDir, file));
 
-  await new Promise((resolve, reject) =>
-    s3.upload(params(thumb, buffer, file), (err, data) => {
-      if (err) {
-        return reject(err);
-      }
-
-      resolve(data);
-    })
-  );
+  await s3.send(new PutObjectCommand(params(thumb, buffer, file)));
 }
 
 (async () => {
-  const existing = async (prefix) =>
-    await new Promise((resolve, reject) =>
-      s3.listObjects(
-        { Bucket: process.env.AWS_S3_BUCKET_NAME, Prefix: prefix },
-        function (err, data) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(
-              data.Contents.filter(
-                (object) =>
-                  object.Key.startsWith('thumb') ||
-                  object.Key.startsWith('marked')
-              ).map((object) => object.Key)
-            );
-          }
-        }
-      )
-    );
+  const existing = async (prefix) => {
+    const keys = [];
+    for await (const page of paginateListObjectsV2(
+      { client: s3 },
+      { Bucket: process.env.AWS_S3_BUCKET_NAME, Prefix: prefix }
+    )) {
+      for (const object of page.Contents ?? []) {
+        keys.push(object.Key);
+      }
+    }
+    return keys;
+  };
 
   console.log('Uploading thumbnails...');
   let i = 1;

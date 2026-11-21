@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'styles/colors';
 
 .checkboxContainer {
@@ -50,7 +51,7 @@
   }
 
   &:hover input ~ .checkbox {
-    background-color: darken(colors.$grey-light, 7);
+    background-color: color.adjust(colors.$grey-light, $lightness: -7%);
   }
 
   input {
@@ -70,6 +71,6 @@
   }
 
   &:hover input:checked ~ .checkbox {
-    background-color: lighten(colors.$gold, 2.2);
+    background-color: color.adjust(colors.$gold, $lightness: 2.2%);
   }
 }

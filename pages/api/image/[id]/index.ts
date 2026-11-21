@@ -3,6 +3,7 @@ import handleItemCrud from '../../../../lib/api/handlers/handleItemCrud';
 import * as fs from 'fs';
 import path from 'path';
 import s3 from '../../../../lib/aws';
+import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import secure from '../../../../lib/api/middleware/secure';
 
 export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
@@ -32,15 +33,19 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
         fs.unlinkSync(markedPath);
       }
     } else {
-      await s3.deleteObject({
-        Bucket: process.env.AWS_S3_BUCKET_NAME!,
-        Key: `thumb/${id}.webp`,
-      });
+      await s3.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Key: `thumb/${id}.webp`,
+        })
+      );
 
-      await s3.deleteObject({
-        Bucket: process.env.AWS_S3_BUCKET_NAME!,
-        Key: `marked/${id}.webp`,
-      });
+      await s3.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Key: `marked/${id}.webp`,
+        })
+      );
     }
   }
 

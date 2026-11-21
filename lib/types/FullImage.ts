@@ -1,24 +1,10 @@
-import { Category, Group, Image, Location, PriceGroup, Tag } from '@prisma/client';
+import type { Category, Group, Image, Location, PriceGroup, Tag } from '@prisma/client';
 
 interface FullImage extends Image {
-  id: number;
-  name: string;
-  width: number;
-  height: number;
-  description: string | null;
-  timeTaken: Date | null;
-  iso: number | null;
-  exposure: number | null;
-  aperture: number | null;
-  focalLength: number | null;
-  cameraModel: string | null;
   group: Group | null;
-  groupId: number | null;
   categories: Category[];
   priceGroup: PriceGroup | null;
-  priceGroupId: number | null;
   location: Location | null;
-  locationId: number | null;
   tags: Tag[];
 }
 
