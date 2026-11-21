@@ -85,7 +85,13 @@
     // build scripts). Never deployed.
     // - local-db: the local D1 database (`npm run preview`)
     // - remote-db: the production D1 database (`npm run deploy` / `upload`)
+    // They declare no Durable Objects or migrations, so the build's local proxy
+    // doesn't expect the Worker's DOQueueHandler class. Wrangler warns that the
+    // other top-level bindings aren't inherited; the build scripts run it with
+    // WRANGLER_LOG=error, as that is intended.
     "local-db": {
+      "durable_objects": { "bindings": [] },
+      "migrations": [],
       "d1_databases": [
         {
           "binding": "DB",
@@ -96,6 +102,8 @@
       ]
     },
     "remote-db": {
+      "durable_objects": { "bindings": [] },
+      "migrations": [],
       "d1_databases": [
         {
           "binding": "DB",
