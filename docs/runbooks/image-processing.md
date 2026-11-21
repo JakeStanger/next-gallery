@@ -24,13 +24,18 @@ See the README's "Image uploads" section for the flow.
    curl -X POST -H "Authorization: Bearer $API_TOKEN" https://rstanger.co.uk/api/image/<id>/process
    ```
 
-2. Look for the error logged by `Failed to process image <id>`:
+2. Look for the error logged by `Failed to process image <id>` or `Dropping image <id>`.
+   Images binding errors are logged as `IMAGES_TRANSFORM_...` or `IMAGES_INFO_...` with a
+   numeric code ([reference](https://developers.cloudflare.com/images/reference/troubleshooting/)):
 
 | Error | Cause / fix |
 |---|---|
 | `Original raw/<id>... not found` | Upload didn't complete. Upload the file again from the admin page. |
 | `Unsupported image format` | Not a raster image. Upload a JPEG/PNG/WebP/AVIF/TIFF/HEIC. |
-| Images binding error (e.g. dimensions/size) | Cloudflare Images input limits (very large dimensions or file size). Downscale the original before uploading. |
+| `Original raw/<id>... is over the 20.0 MB Images binding input limit` | The binding accepts originals up to 20 MB (the upload page rejects larger files). Export a smaller file and upload it again. |
+| Code 9413 | Over 100 megapixels. Downscale the original. |
+| Code 9422 | Monthly free transformation limit reached. Enable paid Images billing (Images → Transformations), then requeue. |
+| Code 9432 | Invalid request. If every upload fails with it, the account is probably on the legacy Image Resizing subscription, which can't use the Images binding: switch to the Images subscription in the dashboard (Images → Transformations), then requeue. |
 | `Failed to update image <id>: 401` | `API_TOKEN` differs between the app and the processor. Set it again with `scripts/migration/set-secrets.sh`. |
 | `Image <id> no longer exists` | The record was deleted while processing; the message is dropped. |
 

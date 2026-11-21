@@ -26,6 +26,13 @@ const THUMBNAIL_WIDTH = 360;
 const THUMBNAIL_QUALITY = 90;
 const MARKED_QUALITY = 95;
 
+/**
+ * Maximum original size the Images binding accepts in `.input()`.
+ * https://developers.cloudflare.com/images/get-started/limits/
+ * Keep in sync with MAX_UPLOAD_BYTES in pages/api/image/[id]/upload.ts.
+ */
+const MAX_INPUT_BYTES = 20 * 1000 * 1000;
+
 /** EXIF lives near the start of JPEG/TIFF/HEIC files */
 const EXIF_READ_BYTES = 512 * 1024;
 
@@ -132,6 +139,15 @@ export async function processImage(
   console.log(`Processing image ${id} (${key})`);
 
   const head = await getOriginal(env, key, { offset: 0, length: EXIF_READ_BYTES });
+  if (head.size > MAX_INPUT_BYTES) {
+    // The original stays in the bucket, so it can be reprocessed with
+    // POST /api/image/<id>/process once replaced with a smaller file.
+    throw new NonRetryableError(
+      `Original ${key} is ${formatMegabytes(head.size)}, over the ` +
+        `${formatMegabytes(MAX_INPUT_BYTES)} Images binding input limit`
+    );
+  }
+
   const exif = await readExif(await head.arrayBuffer());
 
   const info = await env.IMAGES.info((await getOriginal(env, key)).body);
@@ -189,6 +205,26 @@ async function updateRecord(env: Env, id: number, update: ImageRecordUpdate) {
 
 class NonRetryableError extends Error {}
 
+function formatMegabytes(bytes: number) {
+  return `${(bytes / 1000 / 1000).toFixed(1)} MB`;
+}
+
+/**
+ * Formats an error for Workers Logs, which shows only the stack of an Error
+ * passed as a separate argument. Images binding errors carry a numeric `code`
+ * (https://developers.cloudflare.com/images/reference/troubleshooting/).
+ */
+function describeError(err: unknown) {
+  if (!(err instanceof Error)) return String(err);
+
+  const code = (err as { code?: unknown }).code;
+  return [
+    `${err.name}: ${err.message}`,
+    code !== undefined ? ` (code ${code})` : '',
+    err.stack ? `\n${err.stack}` : '',
+  ].join('');
+}
+
 export default {
   async queue(batch: MessageBatch<ImageProcessingMessage>, env: Env) {
     for (const message of batch.messages) {
@@ -206,8 +242,8 @@ export default {
         }
 
         console.error(
-          `Failed to process image ${message.body.id} (attempt ${message.attempts})`,
-          err
+          `Failed to process image ${message.body.id} (attempt ${message.attempts}): ` +
+            describeError(err)
         );
         // exponential-ish backoff: 10s, 20s, 40s, ...
         message.retry({ delaySeconds: 10 * 2 ** (message.attempts - 1) });

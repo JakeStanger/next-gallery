@@ -102,7 +102,7 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
 
 1. The admin upload page creates the image record, then `PUT`s the file to
    `/api/image/<id>/upload`, which streams it into the originals bucket and queues a message on
-   the `image-processing` queue.
+   the `image-processing` queue. Originals are limited to 20 MB, the Images binding's input limit.
 2. `workers/image-processor` consumes the queue: it reads the EXIF data, generates the
    thumbnail and watermarked image with the Cloudflare Images binding, writes them to the images
    bucket and `PATCH`es the record (dimensions + EXIF) back through a service binding to the app.

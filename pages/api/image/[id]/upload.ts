@@ -13,8 +13,12 @@ export const config = {
   },
 };
 
-// Workers accept request bodies up to 100MB on the Free and Pro plans
-const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
+/**
+ * The image processor's Images binding accepts originals up to 20 MB, so larger
+ * files are rejected here rather than failing in the queue.
+ * Keep in sync with MAX_INPUT_BYTES in workers/image-processor/src/index.ts.
+ */
+const MAX_UPLOAD_BYTES = 20 * 1000 * 1000;
 
 /**
  * R2 requires a known length for streamed bodies. On Workers the request is
@@ -63,7 +67,12 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (length > MAX_UPLOAD_BYTES) {
-    return res.status(413).end('Image is too large (max 100MB)');
+    return res
+      .status(413)
+      .end(
+        `Image is too large: ${(length / 1000 / 1000).toFixed(1)} MB, max 20 MB. ` +
+          'Export it at a lower JPEG quality or resolution.'
+      );
   }
 
   const { originals } = getImageBindings();

@@ -76,6 +76,9 @@ function getData(file: File, image: Image) {
   };
 }
 
+/** Images binding input limit, enforced by /api/image/<id>/upload */
+const MAX_UPLOAD_BYTES = 20 * 1000 * 1000;
+
 const PROCESSING_POLL_INTERVAL_MS = 2000;
 const PROCESSING_TIMEOUT_MS = 2 * 60 * 1000;
 
@@ -124,6 +127,15 @@ const UploadImage: React.FC<IServerSideProps> = ({
       setServerMessages(undefined);
       setError(undefined);
 
+      const file = images[0].file!;
+      if (file.size > MAX_UPLOAD_BYTES) {
+        setError(
+          `Image is too large: ${formatBytes(file.size)}, max 20 MB. ` +
+            'Export it at a lower JPEG quality or resolution.'
+        );
+        return;
+      }
+
       // width and height are required, but set by the image processor
       saveData.width = 0;
       saveData.height = 0;
@@ -133,8 +145,6 @@ const UploadImage: React.FC<IServerSideProps> = ({
         setError(image.message);
         return;
       }
-
-      const file = images[0].file!;
 
       const { endpoint, body, contentType } = getData(file, image);
 
