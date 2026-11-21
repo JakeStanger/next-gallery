@@ -4,7 +4,9 @@
  * For each queued upload it:
  *  1. reads EXIF data from the original in the private originals bucket,
  *  2. generates the thumbnail and the watermarked ("marked") image with
- *     Cloudflare Images and writes them to the public images bucket,
+ *     Cloudflare Images and writes them to the public images bucket. These are
+ *     generated from the processing copy when the upload has one, which the
+ *     upload page creates for originals beyond the Images binding's limits,
  *  3. sends the EXIF data and real dimensions to the app, which updates
  *     the database record.
  *
@@ -14,11 +16,14 @@
 import exifr from 'exifr';
 // Bundled as binary data (see `rules` in wrangler.jsonc)
 import overlayPng from '../../../content/overlay.png';
+import { PROCESSING_MAX_BYTES } from '../../../lib/images/limits';
 
 export interface ImageProcessingMessage {
   id: number;
   /** key of the original in ORIGINALS_BUCKET, e.g. raw/42.jpeg */
   key: string;
+  /** key of the processing copy in ORIGINALS_BUCKET, e.g. processing/42.jpeg */
+  processingKey?: string;
 }
 
 /** Output sizes/quality, consistent with existing processed images */
@@ -128,19 +133,33 @@ export async function processImage(
   message: ImageProcessingMessage,
   env: Env
 ): Promise<ImageRecordUpdate> {
-  const { id, key } = message;
-  console.log(`Processing image ${id} (${key})`);
+  const { id, key, processingKey } = message;
+  const inputKey = processingKey ?? key;
+  console.log(`Processing image ${id} (${inputKey})`);
 
   const head = await getOriginal(env, key, { offset: 0, length: EXIF_READ_BYTES });
   const exif = await readExif(await head.arrayBuffer());
 
-  const info = await env.IMAGES.info((await getOriginal(env, key)).body);
+  const input = await env.ORIGINALS_BUCKET.head(inputKey);
+  if (!input) {
+    throw new NonRetryableError(`${inputKey} not found`);
+  }
+
+  if (input.size > PROCESSING_MAX_BYTES) {
+    throw new NonRetryableError(
+      `${inputKey} is ${formatMegabytes(input.size)}, over the ` +
+        `${formatMegabytes(PROCESSING_MAX_BYTES)} Images binding input limit. ` +
+        'Upload it again from the admin upload page, which creates a processing copy.'
+    );
+  }
+
+  const info = await env.IMAGES.info((await getOriginal(env, inputKey)).body);
   if (!('width' in info)) {
     throw new NonRetryableError(`Unsupported image format ${info.format}`);
   }
 
   // Thumbnail
-  const thumbnail = await env.IMAGES.input((await getOriginal(env, key)).body)
+  const thumbnail = await env.IMAGES.input((await getOriginal(env, inputKey)).body)
     .transform({ width: THUMBNAIL_WIDTH })
     .output({ format: 'image/webp', quality: THUMBNAIL_QUALITY });
   await putImage(env, `thumb/${id}.webp`, thumbnail);
@@ -152,7 +171,7 @@ export async function processImage(
     portrait ? { height: info.height } : { width: info.width }
   );
 
-  const marked = await env.IMAGES.input((await getOriginal(env, key)).body)
+  const marked = await env.IMAGES.input((await getOriginal(env, inputKey)).body)
     .draw(overlay, { repeat: true, top: 0, left: 0 })
     .output({ format: 'image/webp', quality: MARKED_QUALITY });
   const markedBytes = await putImage(env, `marked/${id}.webp`, marked);
@@ -189,6 +208,26 @@ async function updateRecord(env: Env, id: number, update: ImageRecordUpdate) {
 
 class NonRetryableError extends Error {}
 
+function formatMegabytes(bytes: number) {
+  return `${(bytes / 1000 / 1000).toFixed(1)} MB`;
+}
+
+/**
+ * Formats an error for Workers Logs, which shows only the stack of an Error
+ * passed as a separate argument. Images binding errors carry a numeric `code`
+ * (https://developers.cloudflare.com/images/reference/troubleshooting/).
+ */
+function describeError(err: unknown) {
+  if (!(err instanceof Error)) return String(err);
+
+  const code = (err as { code?: unknown }).code;
+  return [
+    `${err.name}: ${err.message}`,
+    code !== undefined ? ` (code ${code})` : '',
+    err.stack ? `\n${err.stack}` : '',
+  ].join('');
+}
+
 export default {
   async queue(batch: MessageBatch<ImageProcessingMessage>, env: Env) {
     for (const message of batch.messages) {
@@ -206,8 +245,8 @@ export default {
         }
 
         console.error(
-          `Failed to process image ${message.body.id} (attempt ${message.attempts})`,
-          err
+          `Failed to process image ${message.body.id} (attempt ${message.attempts}): ` +
+            describeError(err)
         );
         // exponential-ish backoff: 10s, 20s, 40s, ...
         message.retry({ delaySeconds: 10 * 2 ** (message.attempts - 1) });

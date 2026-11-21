@@ -1,6 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import secure from '../../../../lib/api/middleware/secure';
-import { findOriginalKey, queueProcessing } from '../../../../lib/images/storage';
+import {
+  findOriginalKey,
+  findProcessingCopyKey,
+  queueProcessing,
+} from '../../../../lib/images/storage';
 
 /**
  * (Re)queues an already uploaded original for processing,
@@ -19,6 +23,7 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(404).end('No original upload found for this image');
   }
 
-  await queueProcessing(id, key);
-  return res.status(202).json({ key });
+  const processingKey = await findProcessingCopyKey(id);
+  await queueProcessing(id, key, processingKey);
+  return res.status(202).json({ key, processingKey });
 });

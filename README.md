@@ -94,15 +94,22 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
   `NEXT_PUBLIC_CDN_URL` to `/cdn-cgi/image/...`, so Cloudflare resizes, re-encodes and caches them at
   the edge. Image transformations must be enabled on the zone. Other images (static assets, and
   everything when no CDN URL is set, e.g. on workers.dev) are served as-is.
-- **Image storage**: two R2 buckets. `rstanger-images-raw` (private) holds uploads as
-  `raw/<id>.<ext>`; `rstanger-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
+- **Image storage**: two R2 buckets. `rstanger-images-raw` (private) holds uploads unchanged as
+  `raw/<id>.<ext>`, plus `processing/<id>.jpeg` processing copies (see below); `rstanger-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
   processed `thumb/<id>.webp` and watermarked `marked/<id>.webp`.
 
 ### Image uploads
 
-1. The admin upload page creates the image record, then `PUT`s the file to
-   `/api/image/<id>/upload`, which streams it into the originals bucket and queues a message on
-   the `image-processing` queue.
+1. The admin upload page creates the image record, then uploads the file unchanged to
+   `/api/image/<id>/upload` in 16 MiB parts (an R2 multipart upload), so originals up to 150 MB
+   fit within the Workers request body limit. Completing the upload queues a message on the
+   `image-processing` queue.
+
+   The Cloudflare Images binding accepts inputs up to 20 MB and 100 megapixels, and WebP is
+   limited to 16,383 pixels per side (`lib/images/limits.ts`). For an original beyond these, the
+   upload page also creates a processing copy in the browser: a JPEG at quality 0.95 (down to
+   0.9), at full resolution where that fits, otherwise the largest that does. It's uploaded to
+   `/api/image/<id>/processing-copy` and the processor generates the published images from it.
 2. `workers/image-processor` consumes the queue: it reads the EXIF data, generates the
    thumbnail and watermarked image with the Cloudflare Images binding, writes them to the images
    bucket and `PATCH`es the record (dimensions + EXIF) back through a service binding to the app.

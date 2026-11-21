@@ -42,7 +42,7 @@ AGENTS.md
 
 # cloudflare / opennext
 /.open-next/
-/.wrangler/
+.wrangler/
 .dev.vars*
 !.dev.vars.example
 

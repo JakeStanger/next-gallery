@@ -7,7 +7,7 @@ See the README's "Image uploads" section for the flow.
 
 | Piece | Where |
 |---|---|
-| Upload endpoint | `PUT /api/image/<id>/upload` (app Worker), writes `raw/<id>.<ext>` to `rstanger-images-raw` |
+| Upload endpoints | `/api/image/<id>/upload` (app Worker), a multipart upload of the original to `raw/<id>.<ext>` in `rstanger-images-raw`; `PUT /api/image/<id>/processing-copy` writes `processing/<id>.jpeg` for originals beyond the Images binding's limits |
 | Queue | `image-processing` (retries up to 5 times with backoff), dead letters in `image-processing-dlq` |
 | Processor | Worker `next-gallery-image-processor` (`workers/image-processor`) |
 | Outputs | `thumb/<id>.webp` (360px wide) and `marked/<id>.webp` (full size, watermarked) in `rstanger-images` |
@@ -24,13 +24,19 @@ See the README's "Image uploads" section for the flow.
    curl -X POST -H "Authorization: Bearer $API_TOKEN" https://rstanger.co.uk/api/image/<id>/process
    ```
 
-2. Look for the error logged by `Failed to process image <id>`:
+2. Look for the error logged by `Failed to process image <id>` or `Dropping image <id>`.
+   Images binding errors are logged as `IMAGES_TRANSFORM_...` or `IMAGES_INFO_...` with a
+   numeric code ([reference](https://developers.cloudflare.com/images/reference/troubleshooting/)):
 
 | Error | Cause / fix |
 |---|---|
 | `Original raw/<id>... not found` | Upload didn't complete. Upload the file again from the admin page. |
 | `Unsupported image format` | Not a raster image. Upload a JPEG/PNG/WebP/AVIF/TIFF/HEIC. |
-| Images binding error (e.g. dimensions/size) | Cloudflare Images input limits (very large dimensions or file size). Downscale the original before uploading. |
+| `raw/<id>... is over the 20.0 MB Images binding input limit` | The original has no processing copy, e.g. it was uploaded some other way than the admin upload page. Delete the image and upload it again from the upload page, which creates one. |
+| Upload page: `This browser can't decode the image` / `couldn't encode` | The browser can't create the processing copy (e.g. TIFF, or a mobile browser's canvas size limit). Use a desktop browser, or export the original as JPEG. |
+| Code 9413 | Over 100 megapixels, so the original needed a processing copy and has none. As for the 20 MB limit above. |
+| Code 9422 | Monthly free transformation limit reached. Enable paid Images billing (Images → Transformations), then requeue. |
+| Code 9432 | Invalid request. If every upload fails with it, the account is probably on the legacy Image Resizing subscription, which can't use the Images binding: switch to the Images subscription in the dashboard (Images → Transformations), then requeue. |
 | `Failed to update image <id>: 401` | `API_TOKEN` differs between the app and the processor. Set it again with `scripts/migration/set-secrets.sh`. |
 | `Image <id> no longer exists` | The record was deleted while processing; the message is dropped. |
 
