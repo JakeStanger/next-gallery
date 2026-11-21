@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-lambda/node_modules
 
 /.pnp
 .pnp.js
@@ -16,8 +15,6 @@ lambda/node_modules
 # production
 /build
 /public/sitemap.xml
-/lambda/lib
-/lambda/function.zip
 
 # misc
 .DS_Store

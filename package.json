@@ -2,27 +2,29 @@
   "name": "next-gallery",
   "version": "0.3.0",
   "private": true,
+  "workspaces": [
+    "workers/*"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare populateCache local && wrangler dev -c wrangler.jsonc -c workers/image-processor/wrangler.jsonc",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspace workers/image-processor",
     "clean": "rm -rf .next .open-next",
     "analyze": "cross-env ANALYZE=true next build --webpack",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "generate": "prisma generate && node scripts/generate-content.mjs",
     "predev": "node scripts/generate-content.mjs",
     "prebuild": "node scripts/generate-content.mjs",
-    "postinstall": "npm run generate"
+    "postinstall": "npm run generate",
+    "deploy:processor": "npm run deploy --workspace workers/image-processor"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1173.0",
-    "@aws-sdk/s3-request-presigner": "^3.1173.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fortawesome/fontawesome-svg-core": "^7.3.1",

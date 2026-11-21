@@ -1,6 +1,6 @@
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 
-// ESLint 9+ flat config (replaces .eslintrc.json; `next lint` was removed in Next 16)
+// ESLint flat config, run with `npm run lint`
 const config = [
   {
     ignores: [
@@ -8,7 +8,8 @@ const config = [
       '.open-next/**',
       'node_modules/**',
       'lib/gen/**',
-      'lambda/lib/**',
+      'workers/*/node_modules/**',
+      'workers/*/worker-configuration.d.ts',
       'next-env.d.ts',
       'cloudflare-env.d.ts',
     ],
@@ -16,9 +17,9 @@ const config = [
   ...nextCoreWebVitals,
   {
     rules: {
-      // New React Compiler advisory rules in eslint-plugin-react-hooks v7.
-      // Existing code intentionally sets state after mount to read browser
-      // storage without hydration mismatches; revisit if adopting the compiler.
+      // React Compiler advisory rules. Components intentionally set state after
+      // mount to read browser storage without hydration mismatches; revisit if
+      // adopting the compiler.
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/use-memo': 'off',
     },

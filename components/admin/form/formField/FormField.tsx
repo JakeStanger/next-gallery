@@ -13,9 +13,8 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DateTime } from 'luxon';
 
 /**
- * MUI X v6+ pickers operate on adapter-native values (Luxon DateTime)
- * rather than JS Dates. Values reach this form as Dates (superjson props)
- * or ISO strings (JSON API).
+ * The pickers operate on adapter-native values (Luxon DateTime), while
+ * values reach this form as Dates (superjson props) or ISO strings (JSON API).
  */
 function toDateTime(value: unknown): DateTime | null {
   if (value === null || value === undefined || value === '') return null;

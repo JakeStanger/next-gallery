@@ -2,15 +2,10 @@
  * Gets the URL of a processed gallery image.
  *
  * Format negotiation (AVIF/WebP/JPEG) is handled by Cloudflare Images via the
- * next/image loader, so the webp variant is always returned unless `jpeg` is set.
+ * next/image loader, so only the webp variant is stored.
  */
-function getImageUrl(
-  id: number,
-  full?: boolean,
-  relative?: boolean,
-  jpeg?: boolean
-) {
-  const relPath = `${full ? 'marked' : 'thumb'}/${id}.${jpeg ? 'jpeg' : 'webp'}`;
+function getImageUrl(id: number, full?: boolean, relative?: boolean) {
+  const relPath = `${full ? 'marked' : 'thumb'}/${id}.webp`;
 
   if (relative) {
     return relPath;

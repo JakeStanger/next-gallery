@@ -1,0 +1,54 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Consumes upload messages queued by the app, generates the thumbnail and
+  // watermarked images with Cloudflare Images, and reports EXIF/dimensions
+  // back to the app.
+  "name": "next-gallery-image-processor",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "observability": {
+    "enabled": true
+  },
+  "images": {
+    "binding": "IMAGES"
+  },
+  "r2_buckets": [
+    {
+      // Private: original uploads (raw/<id>.<ext>)
+      "binding": "ORIGINALS_BUCKET",
+      "bucket_name": "rstanger-images-raw"
+    },
+    {
+      // Public (served from NEXT_PUBLIC_CDN_URL): thumb/<id>.webp, marked/<id>.webp
+      "binding": "IMAGES_BUCKET",
+      "bucket_name": "rstanger-images"
+    }
+  ],
+  "queues": {
+    "consumers": [
+      {
+        "queue": "image-processing",
+        "max_batch_size": 5,
+        "max_batch_timeout": 1,
+        "max_retries": 5,
+        "dead_letter_queue": "image-processing-dlq"
+      }
+    ]
+  },
+  "services": [
+    {
+      // The Next.js app; used to update the image record.
+      "binding": "APP",
+      "service": "next-gallery"
+    }
+  ],
+  // Watermark overlay is bundled into the worker
+  "rules": [
+    {
+      "type": "Data",
+      "globs": ["**/*.png"],
+      "fallthrough": false
+    }
+  ]
+  // Secrets: API_TOKEN (must match the app's API_TOKEN)
+}

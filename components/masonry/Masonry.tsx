@@ -21,10 +21,8 @@ const useIsomorphicLayoutEffect =
 /**
  * Minimal React wrapper around `masonry-layout`.
  *
- * Replaces `react-masonry-component`, which is built on `create-react-class`
- * and does not support React 18+. Card dimensions are always known up-front
- * (they are derived from the stored image width/height), so a relayout after
- * each render is all that is required.
+ * Card dimensions are always known up-front (they are derived from the stored
+ * image width/height), so a relayout after each render is all that is required.
  */
 const Masonry: React.FC<PropsWithChildren<IMasonryProps>> = ({
   className,
@@ -64,7 +62,7 @@ const Masonry: React.FC<PropsWithChildren<IMasonryProps>> = ({
       masonryRef.current?.destroy?.();
       masonryRef.current = null;
     };
-    // options are treated as static, matching react-masonry-component
+    // options are treated as static
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
