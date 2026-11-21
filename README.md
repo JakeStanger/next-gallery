@@ -98,7 +98,7 @@ Run `npm run preview` to run the app and the processor together locally. Note th
 local Images emulation ignores `draw()`, so the watermark only appears when running against
 Cloudflare (e.g. set `"remote": true` on the processor's `IMAGES` binding).
 
-See `docs/runbooks` for provisioning and migration steps.
+See [docs/runbooks](docs/runbooks) for the migration and operational runbooks.
 
 ## TODO
 
