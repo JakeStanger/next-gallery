@@ -1,5 +1,21 @@
 # next-gallery
 
+> [!IMPORTANT]
+> **AI Disclaimer** <img src="https://0rwx.com/static/AI-R-dark.png" width="24" />
+>
+> While this project was originally build entirely by hand, before AI agents existed,
+> it had fallen into a state of disrepair.
+> Other commitments meant I never got the time to address the severe issues,
+> so it into more an more technical debt as the rest of the JS ecosystem moved on without it.
+>
+> Claude Code has been used to author a series of patches to this project in order to update dependencies,
+> fix some outstanding bugs and security holes, and move the hosting stack to a centralised one behind CloudFlare.
+> Some of the documentation and scripts in this repo are a result of that process.
+>
+> The bulk of the code in this repository remains hand-written, and **all code has been manually reviewed**.
+
+
+
 A photo web gallery and store built with NextJS.
 
 A live version can be seen at <https://rstanger.co.uk>.
