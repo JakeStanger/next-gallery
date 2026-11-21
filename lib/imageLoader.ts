@@ -4,7 +4,7 @@ import type { ImageLoaderProps } from 'next/image';
  * next/image loader backed by Cloudflare Images transformations.
  *
  * Requests are rewritten to `/cdn-cgi/image/<options>/<source>`, which
- * Cloudflare resizes, re-encodes (AVIF/WebP/JPEG depending on the browser's
+ * Cloudflare resizes, re-encodes (AVIF or WebP depending on the browser's
  * Accept header via `format=auto`) and caches at the edge. Zone
  * transformations are cached and billed per unique transformation, unlike
  * OpenNext's `/_next/image` handler, which transforms on every request.

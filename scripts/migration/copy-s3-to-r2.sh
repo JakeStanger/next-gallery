@@ -2,9 +2,12 @@
 #
 # Copies images from the S3 bucket to R2, keeping the same keys:
 #
-#   s3://<bucket>/thumb/*   -> r2://rstanger-images/thumb/*
-#   s3://<bucket>/marked/*  -> r2://rstanger-images/marked/*
-#   s3://<bucket>/raw/*     -> r2://rstanger-images-raw/raw/*
+#   s3://<bucket>/thumb/*.webp   -> r2://rstanger-images/thumb/
+#   s3://<bucket>/marked/*.webp  -> r2://rstanger-images/marked/
+#   s3://<bucket>/raw/*          -> r2://rstanger-images-raw/raw/
+#
+# Processed images are served as WebP only, so other formats under thumb/ and marked/
+# (e.g. .jpeg copies) are not copied.
 #
 # Only new/changed objects are copied, so it can be run once for the bulk copy and again
 # for a final sync at cutover. Finishes with `rclone check` to verify every object exists.
@@ -60,9 +63,16 @@ copy() {
 
 CACHE_CONTROL="Cache-Control: public, max-age=15552000"
 
-# Processed images (including any jpeg copies) are publicly served, so keep long caching.
-copy thumb "$IMAGES_BUCKET" --header-upload "$CACHE_CONTROL"
-copy marked "$IMAGES_BUCKET" --header-upload "$CACHE_CONTROL"
+# rclone filter flags per prefix: processed images are WebP only
+filters() {
+  case "$1" in
+    thumb | marked) echo "--include=*.webp" ;;
+  esac
+}
+
+# Processed images are publicly served, so keep long caching.
+copy thumb "$IMAGES_BUCKET" $(filters thumb) --header-upload "$CACHE_CONTROL"
+copy marked "$IMAGES_BUCKET" $(filters marked) --header-upload "$CACHE_CONTROL"
 # Originals are private and only read by the image processor.
 copy raw "$ORIGINALS_BUCKET"
 
@@ -75,8 +85,9 @@ status=0
 for pair in "thumb:$IMAGES_BUCKET" "marked:$IMAGES_BUCKET" "raw:$ORIGINALS_BUCKET"; do
   prefix=${pair%%:*}
   bucket=${pair#*:}
+  # shellcheck disable=SC2046 # filters() output is intentionally word-split
   rclone check "src:${AWS_S3_BUCKET_NAME}/${prefix}" "dst:${bucket}/${prefix}" \
-    --one-way --size-only || status=1
+    --one-way --size-only $(filters "$prefix") || status=1
 done
 
 if [[ $status -ne 0 ]]; then

@@ -6,8 +6,6 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
  * - ORIGINALS_BUCKET (private): raw/<id>.<ext>      original uploads
  * - IMAGES_BUCKET (public CDN): thumb/<id>.webp      360px thumbnail
  *                               marked/<id>.webp     full size, watermarked
- *
- * thumb/marked `.jpeg` copies also exist for some older images.
  */
 
 /** Message consumed by workers/image-processor */
@@ -63,12 +61,7 @@ export async function queueProcessing(id: number, key: string) {
 export async function deleteImageFiles(id: number) {
   const { images, originals } = getImageBindings();
 
-  await images.delete([
-    `thumb/${id}.webp`,
-    `marked/${id}.webp`,
-    `thumb/${id}.jpeg`,
-    `marked/${id}.jpeg`,
-  ]);
+  await images.delete([`thumb/${id}.webp`, `marked/${id}.webp`]);
 
   const listed = await originals.list({ prefix: `raw/${id}.` });
   if (listed.objects.length) {
