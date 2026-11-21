@@ -74,9 +74,10 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
   D1 driver adapter (`lib/client/prisma.ts`). `next build` reads it for static generation through
   wrangler: the `deploy`/`upload` scripts select the `remote-db` wrangler environment so production
   builds use the production database, while `next dev`/`preview` use the local one.
-- **Images**: `next/image` uses a custom loader (`lib/imageLoader.ts`) that rewrites to
-  `/cdn-cgi/image/...` so Cloudflare resizes, re-encodes and caches images at the edge.
-  Image transformations must be enabled on the zone.
+- **Images**: `next/image` uses a custom loader (`lib/imageLoader.ts`) that rewrites images on
+  `NEXT_PUBLIC_CDN_URL` to `/cdn-cgi/image/...`, so Cloudflare resizes, re-encodes and caches them at
+  the edge. Image transformations must be enabled on the zone. Other images (static assets, and
+  everything when no CDN URL is set, e.g. on workers.dev) are served as-is.
 - **Image storage**: two R2 buckets. `rstanger-images-raw` (private) holds uploads as
   `raw/<id>.<ext>`; `rstanger-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
   processed `thumb/<id>.webp` and watermarked `marked/<id>.webp`.

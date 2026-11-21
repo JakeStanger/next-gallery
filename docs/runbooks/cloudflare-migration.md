@@ -109,6 +109,8 @@ scripts/migration/copy-s3-to-r2.sh             # copy + verify
    - set `NEXTAUTH_URL` in `vars` to the workers.dev URL;
    - leave `NEXT_PUBLIC_CDN_URL` unset in `.env`, so images are served from R2 through the
      app's `/api/image/<id>/(thumb|full)` routes. `cdn.rstanger.co.uk` still points at S3.
+     Images are served at full size here: Cloudflare Images transformations (`/cdn-cgi/image`)
+     only run on the zone, for images on the CDN domain.
 
    ```bash
    npm run deploy               # app, built from the production D1 database
@@ -159,15 +161,14 @@ Target window: about 30 minutes. Visitors are unaffected; admin must not be used
    npm run deploy
    ```
 
-   On the real domain Cloudflare's edge handles `/cdn-cgi/image` and enforces allowed origins.
-   On workers.dev the Worker's fallback handler fetches arbitrary image URLs, hence disabling it.
+   Disabling workers.dev leaves the custom domains as the only public hostnames.
 
 7. **Verification gate.** Before shutting anything down:
    - [ ] `curl -sI https://rstanger.co.uk/` shows `server: cloudflare` and no `x-vercel-*` headers.
    - [ ] Every image is served from R2:
          `NEXT_PUBLIC_CDN_URL=https://cdn.rstanger.co.uk/ node scripts/migration/verify-images.mjs`
    - [ ] Repeat the phase 3 checks on `https://rstanger.co.uk`, including admin sign-in and a
-         test upload and delete. Image pages use `/cdn-cgi/image/...` and return
+         test upload and delete. Gallery images use `/cdn-cgi/image/...` and return
          `image/avif` or `image/webp` in a modern browser.
    - [ ] Sentry receives a test error. Workers → Observability shows no recurring errors.
    - [ ] Remove the temporary workers.dev Google OAuth redirect URI.
