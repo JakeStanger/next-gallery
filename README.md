@@ -14,7 +14,7 @@ it to be relatively easy to hack and customise.
 - Ability to sort images into categories and groups.
 - Full admin area for viewing, adding, updating and removing all data.
 - Hosted on Cloudflare Workers via [OpenNext](https://opennext.js.org/cloudflare).
-- Images resized and served in the best format each browser supports (AVIF/WebP/JPEG)
+- Images stored as WebP, resized and served as AVIF or WebP
   by [Cloudflare Images](https://developers.cloudflare.com/images/transform-images/).
 - Stripe Checkout integration for purchasing products based on your images.
 - Static page generation, even for dynamic content, using NextJS's revalidation features.

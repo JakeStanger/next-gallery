@@ -1,7 +1,7 @@
 /**
  * Gets the URL of a processed gallery image.
  *
- * Format negotiation (AVIF/WebP/JPEG) is handled by Cloudflare Images via the
+ * Format negotiation (AVIF/WebP) is handled by Cloudflare Images via the
  * next/image loader, so only the webp variant is stored.
  */
 function getImageUrl(id: number, full?: boolean, relative?: boolean) {
