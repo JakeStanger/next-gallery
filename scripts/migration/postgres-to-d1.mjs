@@ -11,7 +11,7 @@
 // Row ids are preserved, as image files in R2 are keyed by image id.
 // Re-running with --reset makes the import repeatable (e.g. rehearsal, then cutover).
 import pg from 'pg';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import { getPlatformProxy } from 'wrangler';
 
@@ -24,10 +24,87 @@ if (!SOURCE_DATABASE_URL) {
   process.exit(2);
 }
 
-// Prisma stores DateTime in Postgres as UTC `timestamp without time zone`;
-// parse those values as UTC rather than in this machine's time zone.
-const TIMESTAMP_WITHOUT_TZ = 1114;
-pg.types.setTypeParser(TIMESTAMP_WITHOUT_TZ, (value) => new Date(`${value.replace(' ', 'T')}Z`));
+// Values are read from Postgres as text and converted using the Prisma schema's
+// field types, so the import doesn't depend on the source column types (e.g.
+// `bigint` and `numeric` columns, which `pg` returns as strings).
+const asText = (value) => value;
+for (const oid of Object.values(pg.types.builtins)) {
+  pg.types.setTypeParser(oid, asText);
+}
+
+/** Prisma scalar type of each column, by table name */
+const FIELD_TYPES = Object.fromEntries(
+  Prisma.dmmf.datamodel.models.map((model) => [
+    model.dbName ?? model.name,
+    Object.fromEntries(
+      model.fields
+        .filter((field) => field.kind === 'scalar')
+        .map((field) => [field.dbName ?? field.name, field.type])
+    ),
+  ])
+);
+
+// implicit many-to-many tables: A and B are the related ids
+FIELD_TYPES._CategoryToImage = { A: 'Int', B: 'Int' };
+FIELD_TYPES._ImageToTag = { A: 'Int', B: 'Int' };
+
+/**
+ * Parses a timestamp. Values without a UTC offset are Prisma DateTimes, which
+ * Prisma stores in UTC, so they are read as UTC regardless of this machine's
+ * time zone.
+ */
+function parseTimestamp(text) {
+  const iso = text
+    .trim()
+    .replace(' ', 'T')
+    // `timestamptz` text uses hour-only offsets (e.g. +01), which Date rejects
+    .replace(/([+-]\d{2})$/, '$1:00');
+  const hasOffset = /(Z|[+-]\d{2}:?\d{2})$/i.test(iso);
+  return new Date(hasOffset ? iso : `${iso}Z`);
+}
+
+/** Converts a value read from Postgres to the type of its Prisma field */
+function convert(value, type, column) {
+  if (value === null || value === undefined) return null;
+
+  switch (type) {
+    case 'Int': {
+      const number = Number(value);
+      if (!Number.isSafeInteger(number)) {
+        throw new Error(`${column}: ${value} is not a (safe) integer`);
+      }
+      return number;
+    }
+    case 'Float': {
+      const number = Number(value);
+      if (!Number.isFinite(number)) throw new Error(`${column}: ${value} is not a number`);
+      return number;
+    }
+    case 'DateTime': {
+      const date = parseTimestamp(String(value));
+      if (Number.isNaN(date.getTime())) throw new Error(`${column}: ${value} is not a date`);
+      return date;
+    }
+    case 'Boolean':
+      return value === true || value === 't' || value === 'true';
+    case 'String':
+      return String(value);
+    default:
+      throw new Error(`${column}: unsupported field type ${type}`);
+  }
+}
+
+function convertRow(table, row) {
+  const types = FIELD_TYPES[table];
+  if (!types) throw new Error(`No schema for table ${table}`);
+
+  return Object.fromEntries(
+    Object.entries(row).map(([column, value]) => [
+      column,
+      convert(value, types[column], `${table}.${column}`),
+    ])
+  );
+}
 
 // D1 allows at most 100 bound parameters per statement
 const MAX_PARAMS = 90;
@@ -77,7 +154,7 @@ const select = async (table, columns) =>
     await source.query(
       `SELECT ${columns.map((c) => `"${c}"`).join(', ')} FROM "${table}" ORDER BY 1, 2`
     )
-  ).rows;
+  ).rows.map((row) => convertRow(table, row));
 
 const { env, dispose } = await getPlatformProxy({
   environment: remote ? 'remote-db' : undefined,
