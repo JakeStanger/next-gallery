@@ -6,10 +6,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Connection URL is configured in prisma.config.ts (migrations)
-// and via the driver adapter in lib/client/prisma.ts (runtime).
+// Cloudflare D1. Accessed through the `DB` binding with the D1 driver adapter
+// (lib/client/prisma.ts); schema changes are applied with
+// `wrangler d1 migrations apply` (see prisma/migrations).
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 model Category {
@@ -39,7 +40,7 @@ model Group {
 model Image {
   id          Int       @id @default(autoincrement())
   name        String    @unique
-  description String? // @db.Text
+  description String?
   width       Int
   height      Int
   exposure    Float?
@@ -90,60 +91,4 @@ model Tag {
   id     Int     @id @default(autoincrement())
   name   String  @unique
   images Image[]
-}
-
-// == admin login ==
-
-model Account {
-  id                 Int       @id @default(autoincrement())
-  compoundId         String    @unique @map(name: "compound_id")
-  userId             Int       @map(name: "user_id")
-  providerType       String    @map(name: "provider_type")
-  providerId         String    @map(name: "provider_id")
-  providerAccountId  String    @map(name: "provider_account_id")
-  refreshToken       String?   @map(name: "refresh_token")
-  accessToken        String?   @map(name: "access_token")
-  accessTokenExpires DateTime? @map(name: "access_token_expires")
-  createdAt          DateTime  @default(now()) @map(name: "created_at")
-  updatedAt          DateTime  @default(now()) @map(name: "updated_at")
-
-  @@index([providerAccountId], name: "providerAccountId")
-  @@index([providerId], name: "providerId")
-  @@index([userId], name: "userId")
-  @@map(name: "accounts")
-}
-
-model Session {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @map(name: "user_id")
-  expires      DateTime
-  sessionToken String   @unique @map(name: "session_token")
-  accessToken  String   @unique @map(name: "access_token")
-  createdAt    DateTime @default(now()) @map(name: "created_at")
-  updatedAt    DateTime @default(now()) @map(name: "updated_at")
-
-  @@map(name: "sessions")
-}
-
-model User {
-  id            Int       @id @default(autoincrement())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map(name: "email_verified")
-  image         String? // @db.Text
-  createdAt     DateTime  @default(now()) @map(name: "created_at")
-  updatedAt     DateTime  @default(now()) @map(name: "updated_at")
-
-  @@map(name: "users")
-}
-
-model VerificationRequest {
-  id         Int      @id @default(autoincrement())
-  identifier String
-  token      String   @unique
-  expires    DateTime
-  createdAt  DateTime @default(now()) @map(name: "created_at")
-  updatedAt  DateTime @default(now()) @map(name: "updated_at")
-
-  @@map(name: "verification_requests")
 }

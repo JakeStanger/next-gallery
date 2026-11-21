@@ -65,19 +65,46 @@
       "new_sqlite_classes": ["DOQueueHandler"]
     }
   ],
-  "hyperdrive": [
+  "d1_databases": [
     {
-      // Pooled connection to the Postgres database.
-      // Create with `wrangler hyperdrive create` (see docs/runbooks) and paste the id here.
-      "binding": "HYPERDRIVE",
-      "id": "<HYPERDRIVE_ID>",
-      // Used by `wrangler dev` / `opennextjs-cloudflare preview`
-      "localConnectionString": "postgresql://postgres:changeme@localhost:5432/gallery"
+      "binding": "DB",
+      "database_name": "rstanger-db",
+      // Create with `wrangler d1 create rstanger-db` and paste the id here.
+      "database_id": "<D1_DATABASE_ID>",
+      "migrations_dir": "prisma/migrations"
     }
   ],
   // Non-secret runtime configuration. Secrets (NEXTAUTH_SECRET, GOOGLE_CLIENT_SECRET,
   // STRIPE_SECRET_KEY, API_TOKEN, ...) are set with `wrangler secret put`.
   "vars": {
     "NEXTAUTH_URL": "https://rstanger.co.uk"
+  },
+  "env": {
+    // Environments used only by `next build` for static generation, which needs
+    // nothing but the database (selected with NEXT_DEV_WRANGLER_ENV, see the
+    // build scripts). Never deployed.
+    // - local-db: the local D1 database (`npm run preview`)
+    // - remote-db: the production D1 database (`npm run deploy` / `upload`)
+    "local-db": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "rstanger-db",
+          "database_id": "<D1_DATABASE_ID>",
+          "migrations_dir": "prisma/migrations"
+        }
+      ]
+    },
+    "remote-db": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "rstanger-db",
+          "database_id": "<D1_DATABASE_ID>",
+          "migrations_dir": "prisma/migrations",
+          "remote": true
+        }
+      ]
+    }
   }
 }

@@ -1,65 +1,60 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaD1 } from '@prisma/adapter-d1';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-function createClient(connectionString: string) {
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
-}
+// One client per D1 binding. The binding holds no connection state, so a client
+// can safely be shared between requests in the same isolate.
+const clients = new WeakMap<D1Database, PrismaClient>();
 
-declare global {
-  var prisma: PrismaClient | undefined;
-}
+/**
+ * Gets the Prisma client for the `DB` binding.
+ *
+ * The context is requested in async mode because static generation during
+ * `next build` has no Worker request context: OpenNext then provides the
+ * bindings through wrangler (local D1, or the production database when built
+ * with NEXT_DEV_WRANGLER_ENV=remote-db).
+ */
+export async function getPrisma(): Promise<PrismaClient> {
+  const { env } = await getCloudflareContext({ async: true });
 
-// Workers cannot share I/O objects (such as DB sockets) between requests, so
-// on Cloudflare a client is created per request, keyed on the request's
-// ExecutionContext. Hyperdrive pools the underlying Postgres connections, so
-// this is cheap.
-const requestClients = new WeakMap<object, PrismaClient>();
-
-function getRequestClient(): PrismaClient | undefined {
-  let context;
-  try {
-    context = getCloudflareContext();
-  } catch {
-    // Not running inside a Cloudflare request (e.g. `next build`).
-    return undefined;
+  if (!env.DB) {
+    throw new Error('The DB (D1) binding is not configured');
   }
 
-  const connectionString = context.env.HYPERDRIVE?.connectionString;
-  if (!connectionString || !context.ctx) return undefined;
-
-  let client = requestClients.get(context.ctx);
+  let client = clients.get(env.DB);
   if (!client) {
-    client = createClient(connectionString);
-    requestClients.set(context.ctx, client);
+    client = new PrismaClient({ adapter: new PrismaD1(env.DB) });
+    clients.set(env.DB, client);
   }
 
   return client;
 }
 
-function getGlobalClient(): PrismaClient {
-  // Node.js (build-time static generation, `next dev`): reuse one client.
-  if (!globalThis.prisma) {
-    globalThis.prisma = createClient(`${process.env.DATABASE_URL}`);
-  }
-
-  return globalThis.prisma;
-}
-
-function getClient(): PrismaClient {
-  return getRequestClient() ?? getGlobalClient();
-}
+type ModelName = {
+  [K in keyof PrismaClient]: K extends `$${string}` | symbol ? never : K;
+}[keyof PrismaClient];
 
 /**
- * Resolves to the correct PrismaClient for the current environment on every
- * property access, so callers can keep using a module-level `prisma` import.
+ * Module-level client for `prisma.<model>.<method>(...)` calls. Each call
+ * resolves the client for the current environment with `getPrisma()`.
  */
-const prisma = new Proxy({} as PrismaClient, {
-  get(_target, property) {
-    const client = getClient();
-    const value = Reflect.get(client, property, client);
-    return typeof value === 'function' ? value.bind(client) : value;
+const prisma = new Proxy({} as Pick<PrismaClient, ModelName>, {
+  get(_target, model) {
+    return new Proxy(
+      {},
+      {
+        get(_delegate, method) {
+          return async (...args: unknown[]) => {
+            const client = (await getPrisma()) as unknown as Record<
+              PropertyKey,
+              Record<PropertyKey, (...args: unknown[]) => unknown>
+            >;
+            return client[model][method](...args);
+          };
+        },
+      }
+    );
   },
-});
+}) as unknown as PrismaClient;
 
 export default prisma;
