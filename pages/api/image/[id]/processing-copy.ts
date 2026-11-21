@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import secure from '../../../../lib/api/middleware/secure';
 import { getBody, getContentLength } from '../../../../lib/api/requestBody';
-import { getImageBindings, getProcessingCopyKey } from '../../../../lib/images/storage';
+import {
+  getImageBindings,
+  getProcessingCopyKey,
+  ORIGINALS_STORAGE_CLASS,
+} from '../../../../lib/images/storage';
 import { PROCESSING_MAX_BYTES } from '../../../../lib/images/limits';
 
 export const config = {
@@ -46,6 +50,7 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
   const { originals } = getImageBindings();
   await originals.put(key, await getBody(req, length), {
     httpMetadata: { contentType: 'image/jpeg' },
+    storageClass: ORIGINALS_STORAGE_CLASS,
   });
 
   return res.status(200).json({ key });

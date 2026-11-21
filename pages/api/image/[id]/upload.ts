@@ -6,6 +6,7 @@ import {
   getImageBindings,
   getOriginalKey,
   getProcessingCopyKey,
+  ORIGINALS_STORAGE_CLASS,
   queueProcessing,
 } from '../../../../lib/images/storage';
 import { MAX_ORIGINAL_BYTES, UPLOAD_PART_BYTES } from '../../../../lib/images/limits';
@@ -64,6 +65,7 @@ export default secure(async (req: NextApiRequest, res: NextApiResponse) => {
 
     const upload = await originals.createMultipartUpload(key, {
       httpMetadata: { contentType },
+      storageClass: ORIGINALS_STORAGE_CLASS,
     });
 
     return res.status(200).json({ uploadId: upload.uploadId, partSize: UPLOAD_PART_BYTES });

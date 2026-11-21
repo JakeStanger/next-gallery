@@ -4,7 +4,7 @@
 #
 #   s3://<bucket>/thumb/*.webp   -> r2://rstanger-images/thumb/
 #   s3://<bucket>/marked/*.webp  -> r2://rstanger-images/marked/
-#   s3://<bucket>/raw/*          -> r2://rstanger-images-raw/raw/
+#   s3://<bucket>/raw/*          -> r2://rstanger-images-raw/raw/  (Infrequent Access)
 #
 # Processed images are served as WebP only, so other formats under thumb/ and marked/
 # (e.g. .jpeg copies) are not copied.
@@ -52,12 +52,12 @@ if [[ -n "${DRY_RUN:-}" ]]; then
   COMMON_FLAGS+=(--dry-run)
 fi
 
-# prefix destination-bucket extra-flags...
+# prefix destination-remote destination-bucket extra-flags...
 copy() {
-  local prefix=$1 bucket=$2
-  shift 2
+  local prefix=$1 remote=$2 bucket=$3
+  shift 3
   echo "==> ${prefix}/ -> ${bucket}/${prefix}/"
-  rclone copy "src:${AWS_S3_BUCKET_NAME}/${prefix}" "dst:${bucket}/${prefix}" \
+  rclone copy "src:${AWS_S3_BUCKET_NAME}/${prefix}" "${remote}:${bucket}/${prefix}" \
     --metadata "${COMMON_FLAGS[@]}" "$@"
 }
 
@@ -71,10 +71,12 @@ filters() {
 }
 
 # Processed images are publicly served, so keep long caching.
-copy thumb "$IMAGES_BUCKET" $(filters thumb) --header-upload "$CACHE_CONTROL"
-copy marked "$IMAGES_BUCKET" $(filters marked) --header-upload "$CACHE_CONTROL"
-# Originals are private and only read by the image processor.
-copy raw "$ORIGINALS_BUCKET"
+copy thumb dst "$IMAGES_BUCKET" $(filters thumb) --header-upload "$CACHE_CONTROL"
+copy marked dst "$IMAGES_BUCKET" $(filters marked) --header-upload "$CACHE_CONTROL"
+# Originals are private and only read by the image processor, so they're stored as
+# Infrequent Access (STANDARD_IA in the S3 API). The storage class is set on the
+# destination remote only, so it doesn't apply to reads from S3.
+copy raw "dst,storage_class=STANDARD_IA" "$ORIGINALS_BUCKET"
 
 if [[ -n "${DRY_RUN:-}" ]]; then
   exit 0
