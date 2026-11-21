@@ -1,7 +1,6 @@
 // Generates public/sitemap.xml from the page files and image records.
 //
-// Uses `pg` directly: Prisma 7 generates a TypeScript client (lib/gen)
-// which plain Node scripts cannot import.
+// Uses `pg` directly so it can run as a plain Node.js script.
 import fs from 'node:fs';
 import { globby } from 'globby';
 import pg from 'pg';

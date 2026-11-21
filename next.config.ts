@@ -48,15 +48,14 @@ const config: NextConfig = {
     },
   ],
   sassOptions: {
-    // Stylesheets use root-relative imports (`@use 'styles/colors'`), which
-    // the webpack sass-loader resolved implicitly but Turbopack does not.
+    // Stylesheets use root-relative imports (`@use 'styles/colors'`)
     loadPaths: [process.cwd()],
   },
   images: {
     // Optimised by Cloudflare Images transformations rather than Next.js
     loader: 'custom',
     loaderFile: './lib/imageLoader.ts',
-    // Next 16 only allows quality=75 unless other values are listed
+    // Qualities used by the app; others are rejected by next/image
     qualities: [75, 90, 95],
   },
 };

@@ -5,8 +5,8 @@ import getImageUrl from '../../lib/getImageUrl';
 import styles from './Image.module.scss';
 
 /**
- * Next 13 removed the `layout` prop from next/image.
- * These are the documented style equivalents.
+ * Styles giving the sizing behaviour of each layout mode
+ * (next/image only takes explicit styles).
  */
 function getLayoutStyle(layout: IImageProps['layout']): CSSProperties {
   switch (layout) {
@@ -36,7 +36,7 @@ const Image: React.FC<IImageProps> = ({
     setLoaded(true);
   }, []);
 
-  // The modern next/image only accepts data: URLs for blurDataURL, so show the
+  // next/image only accepts data: URLs for blurDataURL, so show the
   // (already cached) thumbnail as a background while the full image loads.
   const placeholderStyle: CSSProperties =
     full && !loaded

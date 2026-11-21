@@ -24,7 +24,7 @@ const session = async (req: NextApiRequest, res: NextApiResponse) => {
         req.query.session_id![0]
       );
       if (session) {
-        // Checkout no longer always creates a Customer for payment-mode sessions
+        // Payment-mode sessions only have a Customer if one was created
         const customer = session.customer
           ? await stripe.customers.retrieve(session.customer as string)
           : null;
@@ -96,7 +96,7 @@ const session = async (req: NextApiRequest, res: NextApiResponse) => {
         cancel_url: `${publicAddress}/basket`,
       });
 
-      // stripe-js removed redirectToCheckout(); the client redirects to this URL.
+      // The client redirects to the hosted checkout page at this URL
       return res.json({ id: session.id, url: session.url });
     }
     default: {

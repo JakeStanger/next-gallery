@@ -7,7 +7,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
  * - IMAGES_BUCKET (public CDN): thumb/<id>.webp      360px thumbnail
  *                               marked/<id>.webp     full size, watermarked
  *
- * Legacy thumb/marked `.jpeg` copies may also exist for images migrated from S3.
+ * thumb/marked `.jpeg` copies also exist for some older images.
  */
 
 /** Message consumed by workers/image-processor */

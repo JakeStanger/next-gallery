@@ -1,5 +1,5 @@
 /**
- * Image processor worker (replaces the AWS Lambda + sharp-thumbnailer).
+ * Image processor worker.
  *
  * For each queued upload it:
  *  1. reads EXIF data from the original in the private originals bucket,
@@ -21,7 +21,7 @@ export interface ImageProcessingMessage {
   key: string;
 }
 
-/** Matches the output of the previous sharp-thumbnailer based pipeline */
+/** Output sizes/quality, consistent with existing processed images */
 const THUMBNAIL_WIDTH = 360;
 const THUMBNAIL_QUALITY = 90;
 const MARKED_QUALITY = 95;

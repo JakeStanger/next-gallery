@@ -5,8 +5,9 @@ import type { ImageLoaderProps } from 'next/image';
  *
  * Requests are rewritten to `/cdn-cgi/image/<options>/<source>`, which
  * Cloudflare resizes, re-encodes (AVIF/WebP/JPEG depending on the browser's
- * Accept header via `format=auto`) and caches at the edge. This replaces both
- * the Next.js image optimiser and the old webp/jpeg user-agent sniffing.
+ * Accept header via `format=auto`) and caches at the edge. Zone
+ * transformations are cached and billed per unique transformation, unlike
+ * OpenNext's `/_next/image` handler, which transforms on every request.
  *
  * Image transformations must be enabled on the zone, and the source host
  * (NEXT_PUBLIC_CDN_URL) must be on the same zone or an allowed origin.

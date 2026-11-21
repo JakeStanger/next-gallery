@@ -4,10 +4,9 @@ import GoogleProvider from 'next-auth/providers/google';
 /**
  * Admin authentication.
  *
- * next-auth v4 dropped the v3 `Adapters.Prisma` API and its adapter requires a
- * different table layout. Admin access is limited to a small allowlist of
- * Google accounts, so sessions are stored in a signed JWT cookie instead of the
- * database. Requires NEXTAUTH_SECRET to be set in production.
+ * Admin access is limited to a small allowlist of Google accounts, so sessions
+ * are stored in a signed JWT cookie and no database adapter is needed.
+ * Requires NEXTAUTH_SECRET to be set in production.
  */
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -26,8 +25,7 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
-      // v4 uses Google's OIDC profile, which exposes `email_verified`
-      // (v3 used the legacy userinfo endpoint's `verified_email`).
+      // Google's OIDC profile exposes verification as `email_verified`
       const googleProfile = profile as
         | { email?: string; email_verified?: boolean }
         | undefined;
