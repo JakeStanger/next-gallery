@@ -70,7 +70,7 @@
       "binding": "DB",
       "database_name": "rstanger-db",
       // Create with `wrangler d1 create rstanger-db` and paste the id here.
-      "database_id": "<D1_DATABASE_ID>",
+      "database_id": "faeda627-ddde-4479-823b-eb0a191e0a7f",
       "migrations_dir": "prisma/migrations"
     }
   ],
@@ -90,7 +90,7 @@
         {
           "binding": "DB",
           "database_name": "rstanger-db",
-          "database_id": "<D1_DATABASE_ID>",
+          "database_id": "faeda627-ddde-4479-823b-eb0a191e0a7f",
           "migrations_dir": "prisma/migrations"
         }
       ]
@@ -100,7 +100,7 @@
         {
           "binding": "DB",
           "database_name": "rstanger-db",
-          "database_id": "<D1_DATABASE_ID>",
+          "database_id": "faeda627-ddde-4479-823b-eb0a191e0a7f",
           "migrations_dir": "prisma/migrations",
           "remote": true
         }
