@@ -3,7 +3,10 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 /**
  * R2 storage layout:
  *
- * - ORIGINALS_BUCKET (private): raw/<id>.<ext>      original uploads
+ * - ORIGINALS_BUCKET (private): raw/<id>.<ext>      original uploads, as uploaded
+ *                               processing/<id>.jpeg processing copy of an original that
+ *                                                    exceeds the processor's limits
+ *                                                    (see lib/images/limits.ts)
  * - IMAGES_BUCKET (public CDN): thumb/<id>.webp      360px thumbnail
  *                               marked/<id>.webp     full size, watermarked
  */
@@ -11,7 +14,10 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 /** Message consumed by workers/image-processor */
 export interface ImageProcessingMessage {
   id: number;
+  /** original, read for EXIF data */
   key: string;
+  /** processing copy, transformed instead of the original when present */
+  processingKey?: string;
 }
 
 export function getImageBindings() {
@@ -53,9 +59,20 @@ export async function findOriginalKey(id: number) {
   return listed.objects[0]?.key;
 }
 
-export async function queueProcessing(id: number, key: string) {
+export function getProcessingCopyKey(id: number) {
+  return `processing/${id}.jpeg`;
+}
+
+/** Gets the key of the image's processing copy, if it has one */
+export async function findProcessingCopyKey(id: number) {
+  const { originals } = getImageBindings();
+  const key = getProcessingCopyKey(id);
+  return (await originals.head(key)) ? key : undefined;
+}
+
+export async function queueProcessing(id: number, key: string, processingKey?: string) {
   const { queue } = getImageBindings();
-  await queue.send({ id, key } satisfies ImageProcessingMessage);
+  await queue.send({ id, key, processingKey } satisfies ImageProcessingMessage);
 }
 
 export async function deleteImageFiles(id: number) {
@@ -64,7 +81,8 @@ export async function deleteImageFiles(id: number) {
   await images.delete([`thumb/${id}.webp`, `marked/${id}.webp`]);
 
   const listed = await originals.list({ prefix: `raw/${id}.` });
-  if (listed.objects.length) {
-    await originals.delete(listed.objects.map((object) => object.key));
-  }
+  await originals.delete([
+    ...listed.objects.map((object) => object.key),
+    getProcessingCopyKey(id),
+  ]);
 }

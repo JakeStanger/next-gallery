@@ -13,6 +13,10 @@ import { useRouter } from 'next/router';
 import ImageService from '../../../lib/services/image';
 import isError from '../../../lib/utils/isError';
 import { serializeProps } from '../../../lib/utils/superjsonProps';
+import {
+  createProcessingCopy,
+  uploadImageFiles,
+} from '../../../lib/client/imageUpload';
 
 interface IServerSideProps {
   categories: Category[];
@@ -30,54 +34,6 @@ function formatBytes(bytes: number, decimals = 1) {
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + sizes[i];
 }
-
-function uploadWithProgress(
-  url: string,
-  body: Blob,
-  contentType: string | undefined,
-  onUploadProgress: (
-    progress: ProgressEvent<XMLHttpRequestEventTarget>
-  ) => void
-) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    xhr.upload.addEventListener('progress', onUploadProgress);
-
-    xhr.open('PUT', url);
-
-    if(contentType) {
-      xhr.setRequestHeader('Content-Type', contentType);
-    }
-
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(xhr.response);
-        } else {
-          reject(new Error(xhr.responseText || `Upload failed (${xhr.status})`));
-        }
-      }
-    };
-
-    xhr.send(body);
-  });
-}
-
-/**
- * Uploads the original into R2 through the app; processing (thumbnail,
- * watermark, EXIF) then happens asynchronously in workers/image-processor.
- */
-function getData(file: File, image: Image) {
-  return {
-    endpoint: `/api/image/${image.id}/upload`,
-    contentType: file.type,
-    body: new Blob([file], { type: file.type }),
-  };
-}
-
-/** Images binding input limit, enforced by /api/image/<id>/upload */
-const MAX_UPLOAD_BYTES = 20 * 1000 * 1000;
 
 const PROCESSING_POLL_INTERVAL_MS = 2000;
 const PROCESSING_TIMEOUT_MS = 2 * 60 * 1000;
@@ -128,13 +84,26 @@ const UploadImage: React.FC<IServerSideProps> = ({
       setError(undefined);
 
       const file = images[0].file!;
-      if (file.size > MAX_UPLOAD_BYTES) {
-        setError(
-          `Image is too large: ${formatBytes(file.size)}, max 20 MB. ` +
-            'Export it at a lower JPEG quality or resolution.'
-        );
+
+      // Created before the image record, so a failure leaves nothing behind
+      let processingCopy: Blob | undefined;
+      try {
+        setServerMessages(['Preparing image...']);
+        processingCopy = await createProcessingCopy(file);
+      } catch (error) {
+        setServerMessages(undefined);
+        setError((error as Error)?.message || String(error));
         return;
       }
+
+      setServerMessages(
+        processingCopy
+          ? [
+              `Created a ${formatBytes(processingCopy.size)} processing copy; ` +
+                'the original is uploaded unchanged.',
+            ]
+          : undefined
+      );
 
       // width and height are required, but set by the image processor
       saveData.width = 0;
@@ -146,19 +115,18 @@ const UploadImage: React.FC<IServerSideProps> = ({
         return;
       }
 
-      const { endpoint, body, contentType } = getData(file, image);
-
       try {
-        await uploadWithProgress(endpoint, body, contentType, (progress) => {
-          setProgress(progress.loaded / progress.total);
-        });
+        await uploadImageFiles(image.id, file, processingCopy, setProgress);
       } catch (error) {
         setError((error as Error)?.message || String(error));
         await ImageService.deleteImage(image.id);
         return;
       }
 
-      setServerMessages(['Upload complete, waiting for processing...']);
+      setServerMessages((messages) => [
+        ...(messages ?? []),
+        'Upload complete, waiting for processing...',
+      ]);
 
       if (await waitForProcessing(image.id)) {
         await router.push(`/admin/images/${image.id}`);
@@ -237,13 +205,6 @@ const UploadImage: React.FC<IServerSideProps> = ({
             )}
 
             {error && <div className={styles.error}>{error}</div>}
-            {images[0]?.file?.size! > 25_000_000 && (
-              <div className={styles.error}>
-                You are about to upload a very large file! (
-                {formatBytes(images[0]!.file!.size)}) This will take a long time
-                for users to load.
-              </div>
-            )}
           </div>
         </div>
         {!!images.length && (

@@ -4,7 +4,9 @@
  * For each queued upload it:
  *  1. reads EXIF data from the original in the private originals bucket,
  *  2. generates the thumbnail and the watermarked ("marked") image with
- *     Cloudflare Images and writes them to the public images bucket,
+ *     Cloudflare Images and writes them to the public images bucket. These are
+ *     generated from the processing copy when the upload has one, which the
+ *     upload page creates for originals beyond the Images binding's limits,
  *  3. sends the EXIF data and real dimensions to the app, which updates
  *     the database record.
  *
@@ -14,24 +16,20 @@
 import exifr from 'exifr';
 // Bundled as binary data (see `rules` in wrangler.jsonc)
 import overlayPng from '../../../content/overlay.png';
+import { PROCESSING_MAX_BYTES } from '../../../lib/images/limits';
 
 export interface ImageProcessingMessage {
   id: number;
   /** key of the original in ORIGINALS_BUCKET, e.g. raw/42.jpeg */
   key: string;
+  /** key of the processing copy in ORIGINALS_BUCKET, e.g. processing/42.jpeg */
+  processingKey?: string;
 }
 
 /** Output sizes/quality, consistent with existing processed images */
 const THUMBNAIL_WIDTH = 360;
 const THUMBNAIL_QUALITY = 90;
 const MARKED_QUALITY = 95;
-
-/**
- * Maximum original size the Images binding accepts in `.input()`.
- * https://developers.cloudflare.com/images/get-started/limits/
- * Keep in sync with MAX_UPLOAD_BYTES in pages/api/image/[id]/upload.ts.
- */
-const MAX_INPUT_BYTES = 20 * 1000 * 1000;
 
 /** EXIF lives near the start of JPEG/TIFF/HEIC files */
 const EXIF_READ_BYTES = 512 * 1024;
@@ -135,28 +133,33 @@ export async function processImage(
   message: ImageProcessingMessage,
   env: Env
 ): Promise<ImageRecordUpdate> {
-  const { id, key } = message;
-  console.log(`Processing image ${id} (${key})`);
+  const { id, key, processingKey } = message;
+  const inputKey = processingKey ?? key;
+  console.log(`Processing image ${id} (${inputKey})`);
 
   const head = await getOriginal(env, key, { offset: 0, length: EXIF_READ_BYTES });
-  if (head.size > MAX_INPUT_BYTES) {
-    // The original stays in the bucket, so it can be reprocessed with
-    // POST /api/image/<id>/process once replaced with a smaller file.
+  const exif = await readExif(await head.arrayBuffer());
+
+  const input = await env.ORIGINALS_BUCKET.head(inputKey);
+  if (!input) {
+    throw new NonRetryableError(`${inputKey} not found`);
+  }
+
+  if (input.size > PROCESSING_MAX_BYTES) {
     throw new NonRetryableError(
-      `Original ${key} is ${formatMegabytes(head.size)}, over the ` +
-        `${formatMegabytes(MAX_INPUT_BYTES)} Images binding input limit`
+      `${inputKey} is ${formatMegabytes(input.size)}, over the ` +
+        `${formatMegabytes(PROCESSING_MAX_BYTES)} Images binding input limit. ` +
+        'Upload it again from the admin upload page, which creates a processing copy.'
     );
   }
 
-  const exif = await readExif(await head.arrayBuffer());
-
-  const info = await env.IMAGES.info((await getOriginal(env, key)).body);
+  const info = await env.IMAGES.info((await getOriginal(env, inputKey)).body);
   if (!('width' in info)) {
     throw new NonRetryableError(`Unsupported image format ${info.format}`);
   }
 
   // Thumbnail
-  const thumbnail = await env.IMAGES.input((await getOriginal(env, key)).body)
+  const thumbnail = await env.IMAGES.input((await getOriginal(env, inputKey)).body)
     .transform({ width: THUMBNAIL_WIDTH })
     .output({ format: 'image/webp', quality: THUMBNAIL_QUALITY });
   await putImage(env, `thumb/${id}.webp`, thumbnail);
@@ -168,7 +171,7 @@ export async function processImage(
     portrait ? { height: info.height } : { width: info.width }
   );
 
-  const marked = await env.IMAGES.input((await getOriginal(env, key)).body)
+  const marked = await env.IMAGES.input((await getOriginal(env, inputKey)).body)
     .draw(overlay, { repeat: true, top: 0, left: 0 })
     .output({ format: 'image/webp', quality: MARKED_QUALITY });
   const markedBytes = await putImage(env, `marked/${id}.webp`, marked);
