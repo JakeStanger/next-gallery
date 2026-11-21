@@ -10,12 +10,12 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 APP_SECRETS=(
-  NEXTAUTH_SECRET      # openssl rand -base64 32
+  NEXTAUTH_SECRET # openssl rand -base64 32
   GOOGLE_CLIENT_ID
   GOOGLE_CLIENT_SECRET
-  AUTHORIZED_EMAILS    # comma separated admin emails
+  AUTHORIZED_EMAILS # comma separated admin emails
   STRIPE_SECRET_KEY
-  API_TOKEN            # openssl rand -hex 32; must match the processor's
+  API_TOKEN # openssl rand -hex 32; must match the processor's
   SENTRY_DSN
 )
 
@@ -28,7 +28,7 @@ put() {
   shift
   for name in "$@"; do
     echo "--> $name ($config)"
-    npx --no-install wrangler secret put "$name" --config "$config"
+    wrangler secret put "$name" --config "$config" --env ""
   done
 }
 
