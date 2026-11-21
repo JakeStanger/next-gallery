@@ -3,9 +3,7 @@ import { withSentryConfig } from '@sentry/nextjs/config';
 import bundleAnalyzer from '@next/bundle-analyzer';
 import packageJson from './package.json' with { type: 'json' };
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
-
-// Makes Cloudflare bindings (getCloudflareContext) available to `next dev`
-initOpenNextCloudflareForDev();
+import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
 const { ANALYZE } = process.env;
 
@@ -60,6 +58,17 @@ const config: NextConfig = {
   },
 };
 
-export default withSentryConfig(withBundleAnalyzer(config), {
+const finalConfig = withSentryConfig(withBundleAnalyzer(config), {
   silent: true, // Suppresses all logs
 });
+
+export default function nextConfig(phase: string) {
+  // Makes Cloudflare bindings (getCloudflareContext) available to `next dev`.
+  // Only for the dev server: builds read bindings per static generation
+  // worker through getCloudflareContext({ async: true }).
+  if (phase === PHASE_DEVELOPMENT_SERVER) {
+    initOpenNextCloudflareForDev();
+  }
+
+  return finalConfig;
+}
