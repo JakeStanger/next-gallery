@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "next-gallery",
+  "name": "rstanger-gallery",
   // Custom entry wrapping the OpenNext worker (.open-next/worker.js) with Sentry
   "main": "worker.ts",
   "compatibility_date": "2026-11-01",
@@ -21,7 +21,7 @@
       // Self-reference used by OpenNext for ISR revalidation.
       // The service name must match the worker name above.
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "next-gallery"
+      "service": "rstanger-gallery"
     }
   ],
   "r2_buckets": [

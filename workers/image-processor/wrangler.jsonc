@@ -3,7 +3,7 @@
   // Consumes upload messages queued by the app, generates the thumbnail and
   // watermarked images with Cloudflare Images, and reports EXIF/dimensions
   // back to the app.
-  "name": "next-gallery-image-processor",
+  "name": "rstanger-image-processor",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
   "observability": {
@@ -39,7 +39,7 @@
     {
       // The Next.js app; used to update the image record.
       "binding": "APP",
-      "service": "next-gallery"
+      "service": "rstanger-gallery"
     }
   ],
   // Watermark overlay is bundled into the worker
