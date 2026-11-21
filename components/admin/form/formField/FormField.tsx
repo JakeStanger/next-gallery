@@ -158,6 +158,9 @@ const FormField: React.FC<IFormFieldProps> = (props) => {
           }
           ampm={false}
           format={'dd MMMM yyyy T'}
+          // EXIF times are the camera's wall-clock time, stored as UTC;
+          // edit them as such rather than shifted into the browser's zone
+          timezone={'UTC'}
         />
       );
   }

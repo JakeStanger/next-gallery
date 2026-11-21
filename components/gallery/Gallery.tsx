@@ -49,7 +49,8 @@ const Gallery: React.FC<IGalleryProps> = ({ imagesAndGroups }) => {
 
   const onLoad = useCallback(() => {
     if (location.hash) {
-      document.querySelector(location.hash)?.scrollIntoView();
+      // querySelector throws on hashes that aren't valid selectors (e.g. #1)
+      document.getElementById(location.hash.slice(1))?.scrollIntoView();
       clearHash();
     }
   }, [clearHash]);

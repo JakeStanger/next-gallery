@@ -35,17 +35,28 @@ const Group: React.FC<IProps> = ({ group }) => {
 export default Group;
 
 export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
+  const id = parseInt(params?.id as string);
+  if (isNaN(id)) {
+    return { notFound: true };
+  }
+
   const group = await prisma.group.findUnique({
-    where: { id: parseInt(params?.id as string) },
+    where: { id },
     include: {
-      images: { orderBy: { timeTaken: 'desc' } },
+      // processed images only (dimensions are set by the image processor)
+      images: { where: { width: { gt: 0 } }, orderBy: { timeTaken: 'desc' } },
       primaryImage: true,
     },
   });
 
+  // Return a real 404 so it isn't cached by ISR as a page
+  if (!group) {
+    return { notFound: true, revalidate: 15 };
+  }
+
   return {
     props: serializeProps({
-      group: group!,
+      group,
     }),
     revalidate: 15,
   };

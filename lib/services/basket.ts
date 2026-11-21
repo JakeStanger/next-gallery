@@ -34,7 +34,15 @@ class BasketService {
   public static getBasket(): IBasketItem[] {
     const basketString = localStorage.getItem(this.STORAGE_KEY);
     if (basketString) {
-      const basket = JSON.parse(basketString) as IBasketItem[];
+      let basket: IBasketItem[];
+      try {
+        basket = JSON.parse(basketString);
+        if (!Array.isArray(basket)) throw new Error('Invalid basket');
+      } catch {
+        // start a new basket if the stored one is corrupted
+        this.saveBasket([]);
+        return [];
+      }
 
       // filter invalid basket items
       let filteredBasket = basket.filter(
@@ -55,13 +63,12 @@ class BasketService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(basket));
   }
 
-  public static async createSession(
-    basket: IBasketItem[],
-    images: Image[],
-    prices: Price[],
-    ship: boolean
-  ) {
-    return await fetch('/api/checkout/session', {
+  /**
+   * Creates a Stripe Checkout session. Only ids and quantities are sent;
+   * the server looks up names and prices itself.
+   */
+  public static async createSession(basket: IBasketItem[], ship: boolean) {
+    const res = await fetch('/api/checkout/session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -69,13 +76,24 @@ class BasketService {
       },
       body: JSON.stringify({
         ship,
-        basket: basket.map((i) => ({
-          ...i,
-          price: prices.find((p) => p.id === i.priceId)!,
-          image: images.find((im) => im.id === i.imageId)!,
+        basket: basket.map(({ imageId, priceId, quantity }) => ({
+          imageId,
+          priceId,
+          quantity,
         })),
       }),
-    }).then((r) => r.json() as Promise<{ id: string; url: string | null }>);
+    });
+
+    const body = (await res.json().catch(() => ({}))) as {
+      url?: string | null;
+      error?: string;
+    };
+
+    if (!res.ok || !body.url) {
+      throw new Error(body.error ?? 'Unable to start checkout, please try again.');
+    }
+
+    return body.url;
   }
 }
 

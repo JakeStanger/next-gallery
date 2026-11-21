@@ -102,9 +102,9 @@ const ImageForm: React.FC<IImageFormProps> = ({
           <FormField {...fieldProps('Time Taken', 'timeTaken', 'datetime')} />
           <FormField {...fieldProps('ISO', 'iso', 'integer')} />
           <FormField {...fieldProps('Exposure', 'exposure', 'float')} />
-          <FormField {...fieldProps('Aperture', 'aperture', 'integer')} />
+          <FormField {...fieldProps('Aperture', 'aperture', 'float')} />
           <FormField
-            {...fieldProps('Focal Length', 'focalLength', 'integer')}
+            {...fieldProps('Focal Length', 'focalLength', 'float')}
           />
           <FormField
             label={'Camera Model'}

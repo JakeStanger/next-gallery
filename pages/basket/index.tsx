@@ -70,20 +70,19 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
     setBasket(getExpandedBasket(BasketService.getBasket(), images, prices));
   }, [images, prices]);
 
+  const [checkoutError, setCheckoutError] = useState<string>();
+
   const onCheckout = useCallback(
     async (ship: boolean) => {
-      const { url } = await BasketService.createSession(
-        basket,
-        images,
-        prices,
-        ship
-      );
-
-      if (url) {
+      setCheckoutError(undefined);
+      try {
+        const url = await BasketService.createSession(basket, ship);
         window.location.assign(url);
+      } catch (err) {
+        setCheckoutError((err as Error).message);
       }
     },
-    [basket, images, prices]
+    [basket]
   );
 
   const onDelete = useCallback(() => {
@@ -174,6 +173,7 @@ const Basket: React.FC<IServerSideProps> = ({ images, prices }) => {
           disabled={cannotShip}
         />
         <Button onClick={() => onCheckout(false)} text={'Collect'} />
+        {checkoutError && <p role={'alert'}>{checkoutError}</p>}
       </Dialog>
     </Layout>
   );

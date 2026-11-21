@@ -160,8 +160,10 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
     include: { priceGroup: { include: { prices: true } }, location: true },
   });
 
-  if (!image) {
-    return { notFound: true };
+  // Images get their dimensions once processed; until then there's nothing to
+  // show, so revalidate to pick the image up when it's ready.
+  if (!image || !image.width || !image.height) {
+    return { notFound: true, revalidate: 15 };
   }
 
   const description = image.description
@@ -195,6 +197,7 @@ export const getStaticProps: GetStaticProps<IProps> = async ({ params }) => {
 export const getStaticPaths: GetStaticPaths = async () => {
   const images = await prisma.image.findMany({
     select: { id: true },
+    where: { width: { gt: 0 } },
   });
 
   return {

@@ -19,9 +19,14 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      const authorizedEmails = process.env.AUTHORIZED_EMAILS?.split(',');
+      // Blank means "allow any account the Google OAuth app allows" (see .env.example).
+      // Entries are compared trimmed and case-insensitively.
+      const authorizedEmails = (process.env.AUTHORIZED_EMAILS ?? '')
+        .split(',')
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
 
-      if (!authorizedEmails) {
+      if (!authorizedEmails.length) {
         return true;
       }
 
@@ -33,7 +38,8 @@ export const authOptions: NextAuthOptions = {
       return (
         account?.provider === 'google' &&
         googleProfile?.email_verified === true &&
-        authorizedEmails.includes(googleProfile.email as string)
+        !!googleProfile.email &&
+        authorizedEmails.includes(googleProfile.email.toLowerCase())
       );
     },
   },

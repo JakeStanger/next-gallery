@@ -13,7 +13,8 @@ const TechInfoTable: React.FC<ITechInfoTableProps> = ({ image, exposure }) => {
           <>
             <div className={styles.cell}>Time Taken</div>
             <div className={styles.cell}>
-              {DateTime.fromJSDate(image.timeTaken).toFormat(
+              {/* EXIF times are the camera's wall-clock time, stored as UTC */}
+              {DateTime.fromJSDate(image.timeTaken, { zone: 'utc' }).toFormat(
                 'dd/MM/yyyy HH:mm'
               )}
             </div>
