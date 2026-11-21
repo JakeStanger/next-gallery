@@ -58,8 +58,8 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
 - **Images**: `next/image` uses a custom loader (`lib/imageLoader.ts`) that rewrites to
   `/cdn-cgi/image/...` so Cloudflare resizes, re-encodes and caches images at the edge.
   Image transformations must be enabled on the zone.
-- **Image storage**: two R2 buckets. `next-gallery-originals` (private) holds uploads as
-  `raw/<id>.<ext>`; `next-gallery-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
+- **Image storage**: two R2 buckets. `rstanger-images-raw` (private) holds uploads as
+  `raw/<id>.<ext>`; `rstanger-images` (public, served at `NEXT_PUBLIC_CDN_URL`) holds the
   processed `thumb/<id>.webp` and watermarked `marked/<id>.webp`.
 
 ### Image uploads
