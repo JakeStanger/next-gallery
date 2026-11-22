@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import Button from '@mui/material/Button';
 import styles from './EditForm.module.scss';
 import AdminLayout from '../../../components/admin/AdminLayout';
 import ImageForm from '../../../components/admin/imageForm/ImageForm';
@@ -36,7 +37,14 @@ function formatBytes(bytes: number, decimals = 1) {
 }
 
 const PROCESSING_POLL_INTERVAL_MS = 2000;
-const PROCESSING_TIMEOUT_MS = 2 * 60 * 1000;
+// Large images can take a few minutes, as the watermarked image is retried at
+// smaller sizes if Cloudflare Images times out.
+const PROCESSING_TIMEOUT_MS = 5 * 60 * 1000;
+
+const PROCESSING_DELAYED_MESSAGE =
+  'This image is taking longer than expected to process. It has been uploaded and ' +
+  "saved, but won't appear in the gallery until processing finishes. You can retry " +
+  'processing now, or come back to it later from the images list.';
 
 /**
  * Waits for the image processor to fill in the image dimensions,
@@ -69,19 +77,59 @@ const UploadImage: React.FC<IServerSideProps> = ({
   const [progress, setProgress] = useState(0);
   const [serverMessages, setServerMessages] = useState<string[]>();
   const [error, setError] = useState<string>();
+  /** Uploaded image whose processing hasn't finished, which can be retried */
+  const [unprocessedId, setUnprocessedId] = useState<number>();
+  const [retrying, setRetrying] = useState(false);
 
   const onChange = (imageList: ImageListType) => {
     setImages(imageList);
     setProgress(0);
     setServerMessages(undefined);
     setError(undefined);
+    setUnprocessedId(undefined);
   };
+
+  /** Opens the image once processed, otherwise offers to retry processing */
+  const finishProcessing = useCallback(
+    async (id: number) => {
+      if (await waitForProcessing(id)) {
+        await router.push(`/admin/images/${id}`);
+      } else {
+        setError(PROCESSING_DELAYED_MESSAGE);
+        setUnprocessedId(id);
+      }
+    },
+    [router]
+  );
+
+  const retryProcessing = useCallback(async () => {
+    if (unprocessedId === undefined) return;
+
+    setRetrying(true);
+    setError(undefined);
+    setServerMessages(['Retrying processing...']);
+
+    try {
+      const res = await fetch(`/api/image/${unprocessedId}/process`, { method: 'POST' });
+      if (!res.ok) {
+        setError(`Couldn't retry processing: ${(await res.text()) || res.statusText}`);
+        return;
+      }
+
+      await finishProcessing(unprocessedId);
+    } catch (error) {
+      setError(`Couldn't retry processing: ${(error as Error)?.message || error}`);
+    } finally {
+      setRetrying(false);
+    }
+  }, [unprocessedId, finishProcessing]);
 
   const uploadImage = useCallback(
     async (saveData: Prisma.ImageCreateInput) => {
       setProgress(0);
       setServerMessages(undefined);
       setError(undefined);
+      setUnprocessedId(undefined);
 
       const file = images[0].file!;
 
@@ -128,17 +176,9 @@ const UploadImage: React.FC<IServerSideProps> = ({
         'Upload complete, waiting for processing...',
       ]);
 
-      if (await waitForProcessing(image.id)) {
-        await router.push(`/admin/images/${image.id}`);
-      } else {
-        setError(
-          'Processing is taking longer than expected. The image has been uploaded; ' +
-            'check the image-processor worker logs, or reprocess it with ' +
-            `POST /api/image/${image.id}/process.`
-        );
-      }
+      await finishProcessing(image.id);
     },
-    [images, router]
+    [images, finishProcessing]
   );
 
   const progressPercent = Math.round(progress * 100);
@@ -205,6 +245,16 @@ const UploadImage: React.FC<IServerSideProps> = ({
             )}
 
             {error && <div className={styles.error}>{error}</div>}
+            {unprocessedId !== undefined && !retrying && (
+              <Button
+                variant='contained'
+                color='primary'
+                sx={{ mt: 1 }}
+                onClick={retryProcessing}
+              >
+                Retry processing
+              </Button>
+            )}
           </div>
         </div>
         {!!images.length && (

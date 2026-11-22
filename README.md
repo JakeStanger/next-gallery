@@ -115,7 +115,13 @@ The site runs as a single Cloudflare Worker (`wrangler.jsonc`):
 2. `workers/image-processor` consumes the queue: it reads the EXIF data, generates the
    thumbnail and watermarked image with the Cloudflare Images binding, writes them to the images
    bucket and `PATCH`es the record (dimensions + EXIF) back through a service binding to the app.
-3. The upload page polls until the record has dimensions, then opens the edit page.
+
+   The watermark (`content/overlay.png`) is tiled across the image at its own size, from the top
+   left. Cloudflare Images times out (error 9529) on large outputs, so on a timeout the watermarked
+   image is generated again at 75% of the long side, down to 2048px, with the tile scaled by the
+   same factor. The record keeps the image's full dimensions.
+3. The upload page polls until the record has dimensions, then opens the edit page. If that
+   takes over 5 minutes, it offers to retry processing (`POST /api/image/<id>/process`).
 
 Failures are retried with backoff and then moved to the `image-processing-dlq` queue.
 `POST /api/image/<id>/process` requeues an image whose original is already uploaded.
