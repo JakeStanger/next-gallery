@@ -31,6 +31,13 @@ const THUMBNAIL_WIDTH = 360;
 const THUMBNAIL_QUALITY = 90;
 const MARKED_QUALITY = 95;
 
+/** Cloudflare Images error code for a transformation that timed out */
+const IMAGES_TIMEOUT = 9529;
+/** Long side reduction applied each time the watermarked image times out */
+const MARKED_FALLBACK_SCALE = 0.75;
+/** Smallest long side the watermarked image is reduced to before giving up */
+const MARKED_MIN_LONG_SIDE = 2048;
+
 /** EXIF lives near the start of JPEG/TIFF/HEIC files */
 const EXIF_READ_BYTES = 512 * 1024;
 
@@ -164,27 +171,84 @@ export async function processImage(
     .output({ format: 'image/webp', quality: THUMBNAIL_QUALITY });
   await putImage(env, `thumb/${id}.webp`, thumbnail);
 
-  // Full size image with the watermark tiled across it. As before, the overlay
-  // is scaled to the image width (landscape) or height (portrait).
-  const portrait = info.height > info.width;
-  const overlay = env.IMAGES.input(overlayStream()).transform(
-    portrait ? { height: info.height } : { width: info.width }
-  );
+  const marked = await createMarked(env, id, inputKey, info);
 
-  const marked = await env.IMAGES.input((await getOriginal(env, inputKey)).body)
-    .draw(overlay, { repeat: true, top: 0, left: 0 })
-    .output({ format: 'image/webp', quality: MARKED_QUALITY });
-  const markedBytes = await putImage(env, `marked/${id}.webp`, marked);
-
-  // Use the output's dimensions so any EXIF orientation applied during
-  // processing is reflected in the stored width/height.
-  const markedInfo = await env.IMAGES.info(new Blob([markedBytes]).stream());
-  const dimensions =
-    'width' in markedInfo
-      ? { width: markedInfo.width, height: markedInfo.height }
-      : { width: info.width, height: info.height };
+  // Report the input's dimensions, even if the watermarked image was made smaller.
+  // The input's info may be before EXIF orientation is applied, so take the
+  // orientation from the output.
+  const markedInfo = await env.IMAGES.info(new Blob([marked]).stream());
+  const portrait = 'width' in markedInfo && markedInfo.height > markedInfo.width;
+  const [short, long] = [info.width, info.height].sort((a, b) => a - b);
+  const dimensions = portrait
+    ? { width: short, height: long }
+    : { width: long, height: short };
 
   return { ...dimensions, ...exif };
+}
+
+/**
+ * Generates the watermarked image and stores it, returning its bytes.
+ *
+ * Cloudflare Images times out (error 9529) on large outputs, so on a timeout it is
+ * generated again with its long side reduced by MARKED_FALLBACK_SCALE, down to
+ * MARKED_MIN_LONG_SIDE.
+ */
+async function createMarked(env: Env, id: number, inputKey: string, info: ImageSize) {
+  const fullLongSide = Math.max(info.width, info.height);
+  let longSide = fullLongSide;
+
+  for (;;) {
+    try {
+      const result = await renderMarked(env, inputKey, info, longSide);
+      const bytes = await putImage(env, `marked/${id}.webp`, result);
+
+      if (longSide < fullLongSide) {
+        console.warn(
+          `Watermarked image ${id} generated at ${longSide}px on its long side ` +
+            `(input ${fullLongSide}px): larger sizes timed out`
+        );
+      }
+
+      return bytes;
+    } catch (err) {
+      const next = Math.round(longSide * MARKED_FALLBACK_SCALE);
+      const timedOut = (err as { code?: unknown }).code === IMAGES_TIMEOUT;
+      if (!timedOut || next < MARKED_MIN_LONG_SIDE) {
+        throw err;
+      }
+
+      console.warn(
+        `Watermarking image ${id} at ${longSide}px timed out, retrying at ${next}px`
+      );
+      longSide = next;
+    }
+  }
+}
+
+type ImageSize = { width: number; height: number };
+
+/** Renders the image with its long side at `longSide`, with the watermark over it */
+async function renderMarked(
+  env: Env,
+  inputKey: string,
+  info: ImageSize,
+  longSide: number
+) {
+  let image = env.IMAGES.input((await getOriginal(env, inputKey)).body);
+  if (longSide < Math.max(info.width, info.height)) {
+    image = image.transform({ width: longSide, height: longSide, fit: 'scale-down' });
+  }
+
+  // The overlay is square, with the watermark across its diagonal. Sized to the
+  // long side and centred, it covers the whole image with the watermark in the
+  // middle. `contain` scales it up or down to exactly that size.
+  const overlay = env.IMAGES.input(overlayStream()).transform({
+    width: longSide,
+    height: longSide,
+    fit: 'contain',
+  });
+
+  return image.draw(overlay).output({ format: 'image/webp', quality: MARKED_QUALITY });
 }
 
 async function updateRecord(env: Env, id: number, update: ImageRecordUpdate) {
