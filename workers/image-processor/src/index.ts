@@ -234,21 +234,43 @@ async function renderMarked(
   info: ImageSize,
   longSide: number
 ) {
+  const fullLongSide = Math.max(info.width, info.height);
+
   let image = env.IMAGES.input((await getOriginal(env, inputKey)).body);
-  if (longSide < Math.max(info.width, info.height)) {
+  let overlay = env.IMAGES.input(overlayStream());
+
+  if (longSide < fullLongSide) {
     image = image.transform({ width: longSide, height: longSide, fit: 'scale-down' });
+
+    // Scale the tile by the same factor, so the result matches the full size
+    // image scaled down.
+    const { width } = await getOverlaySize(env);
+    overlay = overlay.transform({ width: Math.round((width * longSide) / fullLongSide) });
   }
 
-  // The overlay is square, with the watermark across its diagonal. Sized to the
-  // long side and centred, it covers the whole image with the watermark in the
-  // middle. `contain` scales it up or down to exactly that size.
-  const overlay = env.IMAGES.input(overlayStream()).transform({
-    width: longSide,
-    height: longSide,
-    fit: 'contain',
-  });
+  // The watermark is tiled across the whole image at the overlay's own size.
+  return image
+    .draw(overlay, { repeat: true, top: 0, left: 0 })
+    .output({ format: 'image/webp', quality: MARKED_QUALITY });
+}
 
-  return image.draw(overlay).output({ format: 'image/webp', quality: MARKED_QUALITY });
+let overlaySize: Promise<ImageSize> | undefined;
+
+/** Dimensions of content/overlay.png */
+function getOverlaySize(env: Env) {
+  overlaySize ??= env.IMAGES.info(overlayStream()).then(
+    (info) => {
+      if (!('width' in info)) throw new Error('The watermark overlay is not a raster image');
+      return { width: info.width, height: info.height };
+    },
+    (err) => {
+      // Don't cache a failure for the rest of the isolate's life
+      overlaySize = undefined;
+      throw err;
+    }
+  );
+
+  return overlaySize;
 }
 
 async function updateRecord(env: Env, id: number, update: ImageRecordUpdate) {
