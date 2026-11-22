@@ -159,25 +159,55 @@ Target window: about 30 minutes. Visitors are unaffected; admin must not be used
 4. **Final database import**:
    `SOURCE_DATABASE_URL=... node scripts/migration/postgres-to-d1.mjs --remote --reset`.
    It must end with `Import complete and verified`.
-5. **Switch the CDN domain to R2**: delete the `cdn` DNS record, then:
-
-   ```bash
-   CDN_DOMAIN=cdn.rstanger.co.uk CF_ZONE_ID=<zone id> scripts/migration/provision-cloudflare.sh
-   ```
-
-6. **Switch the site**: delete the `@` and `www` DNS records pointing at Vercel. Restore the
-   `routes` block, set `NEXTAUTH_URL` back to `https://rstanger.co.uk` and add
-   `"workers_dev": false` in `wrangler.jsonc`. Set `NEXT_PUBLIC_CDN_URL=https://cdn.rstanger.co.uk/`
-   in `.env`, then:
+5. **Switch the site to the Worker.** In `wrangler.jsonc`, restore the `routes` block, set
+   `NEXTAUTH_URL` back to `https://rstanger.co.uk` and add `"workers_dev": false`. Set
+   `NEXT_PUBLIC_CDN_URL=https://cdn.rstanger.co.uk/` in `.env`. Leave the `@` and `www` DNS
+   records as they are, then:
 
    ```bash
    npm run deploy
    ```
 
-   Disabling workers.dev leaves the custom domains as the only public hostnames.
+   After building, wrangler reports that DNS records conflict with the Worker's custom domains
+   and asks `Update them to point to this script instead?`. Answer **yes**: it replaces the
+   Vercel records with the Worker's in one step, so the site switches with no gap. (Without a
+   terminal, e.g. in CI, it replaces them without asking.) If the deploy ends with `Publishing
+   to Custom Domains was skipped`, run `npx opennextjs-cloudflare deploy` to retry without
+   rebuilding.
+
+   Check that `curl -sI https://rstanger.co.uk/` shows `server: cloudflare` and no
+   `x-vercel-*` headers. Disabling workers.dev leaves the custom domains as the only public
+   hostnames.
+
+   Images are still served from S3 through CloudFront until the next step. The keys are the
+   same, so the site works either way. The CDN must switch after the site: R2 only has the
+   WebP images, which the Vercel site doesn't use.
+
+6. **Switch the CDN domain to R2.** An R2 custom domain creates its own DNS record, so the
+   hostname must be free. In the zone's DNS records, delete the `cdn` record pointing at
+   CloudFront, then straight away:
+
+   ```bash
+   npx wrangler r2 bucket domain add rstanger-images --domain cdn.rstanger.co.uk \
+     --zone-id <zone id> --min-tls 1.2 --force
+   ```
+
+   The zone id is on the zone's Overview page in the dashboard. Wait for the domain to become
+   active, usually a few minutes:
+
+   ```bash
+   npx wrangler r2 bucket domain get rstanger-images --domain cdn.rstanger.co.uk
+   ```
+
+   If it stays initialising, use **Retry connection** on the bucket's Settings → Custom Domains
+   in the dashboard. Until it's active, gallery images already transformed through
+   `/cdn-cgi/image` are served from Cloudflare's cache, but full-size links and uncached sizes
+   fail.
+
+   Then `curl -sI https://cdn.rstanger.co.uk/thumb/<id>.webp` shows `server: cloudflare` and no
+   `x-amz-cf-id` header.
 
 7. **Verification gate.** Before shutting anything down:
-   - [ ] `curl -sI https://rstanger.co.uk/` shows `server: cloudflare` and no `x-vercel-*` headers.
    - [ ] Every image is served from R2:
          `NEXT_PUBLIC_CDN_URL=https://cdn.rstanger.co.uk/ node scripts/migration/verify-images.mjs`
    - [ ] Repeat the phase 3 checks on `https://rstanger.co.uk`, including admin sign-in and a
@@ -186,9 +216,12 @@ Target window: about 30 minutes. Visitors are unaffected; admin must not be used
    - [ ] Sentry receives a test error. Workers → Observability shows no recurring errors.
    - [ ] Remove the temporary workers.dev Google OAuth redirect URI.
 
-   **If the gate fails and can't be fixed quickly, roll back.** Restore the previous `@`, `www`
-   and `cdn` DNS records (detaching the Worker custom domains and the R2 domain first), and
-   re-enable the Lambda trigger. Postgres was frozen, so the old stack has all the data. Lift
+   **If the gate fails and can't be fixed quickly, roll back.** Detach the custom domains, which
+   removes their DNS records: the Worker's under Workers & Pages → `rstanger-gallery` → Settings
+   → Domains & Routes, and the CDN's with
+   `npx wrangler r2 bucket domain remove rstanger-images --domain cdn.rstanger.co.uk`. Then
+   recreate the `@`, `www` and `cdn` records with the values noted in phase 0, and re-enable the
+   Lambda trigger. Postgres was frozen, so the old stack has all the data. Lift
    the read-only setting, if used, with `ALTER DATABASE <db> SET default_transaction_read_only = off;`.
 
 8. Announce that admin is available again, now on Cloudflare.
